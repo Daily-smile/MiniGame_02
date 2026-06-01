@@ -1,0 +1,317 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|e:\\unityproject\\socketclient\\server\\socketmultiplayergameserver\\controller\\gamecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:controller\\gamecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\servers\\udpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:servers\\udpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\dao\\userdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:dao\\userdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\servers\\server.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:servers\\server.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\servers\\room.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:servers\\room.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\servers\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:servers\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\database\\databaseconnectionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:database\\databaseconnectionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\database\\databasemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:database\\databasemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\config.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:config.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\logger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:logger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\controller\\roomcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:controller\\roomcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\controller\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:controller\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\controller\\basecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:controller\\basecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\controller\\controllermanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:controller\\controllermanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\tool\\message.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:tool\\message.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\cachemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:cachemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\countdowntimer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69EBF38F-A6C9-4BB1-A7E1-8A8BCCF169BD}|SocketMultiplayerGameServer.csproj|solutionrelative:countdowntimer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "GameController.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\GameController.cs",
+              "RelativeDocumentMoniker": "Controller\\GameController.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\GameController.cs",
+              "RelativeToolTip": "Controller\\GameController.cs",
+              "ViewState": "AgIAAGsAAAAAAAAAAAAUwHkAAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-28T06:56:56.471Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "UDPServer.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Servers\\UDPServer.cs",
+              "RelativeDocumentMoniker": "Servers\\UDPServer.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Servers\\UDPServer.cs",
+              "RelativeToolTip": "Servers\\UDPServer.cs",
+              "ViewState": "AgIAADYAAAAAAAAAAAAewDMAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-07T13:56:21.622Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "DatabaseConnectionManager.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Database\\DatabaseConnectionManager.cs",
+              "RelativeDocumentMoniker": "Database\\DatabaseConnectionManager.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Database\\DatabaseConnectionManager.cs",
+              "RelativeToolTip": "Database\\DatabaseConnectionManager.cs",
+              "ViewState": "AgIAAJYAAAAAAAAAAAAAwJsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-08T07:01:57.453Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Logger.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Logger.cs",
+              "RelativeDocumentMoniker": "Logger.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Logger.cs",
+              "RelativeToolTip": "Logger.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAxwBkAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-08T06:55:11.032Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAkwEsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-19T14:00:28.435Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "CONFIG.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\CONFIG.cs",
+              "RelativeDocumentMoniker": "CONFIG.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\CONFIG.cs",
+              "RelativeToolTip": "CONFIG.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAkwBcAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-31T06:42:15.482Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UserData.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\DAO\\UserData.cs",
+              "RelativeDocumentMoniker": "DAO\\UserData.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\DAO\\UserData.cs",
+              "RelativeToolTip": "DAO\\UserData.cs",
+              "ViewState": "AgIAAGAAAAAAAAAAAAAewGkAAABxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-20T05:44:28.681Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Client.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Servers\\Client.cs",
+              "RelativeDocumentMoniker": "Servers\\Client.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Servers\\Client.cs",
+              "RelativeToolTip": "Servers\\Client.cs",
+              "ViewState": "AgIAACUAAAAAAAAAAAAkwDAAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-19T14:35:47.678Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Server.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Servers\\Server.cs",
+              "RelativeDocumentMoniker": "Servers\\Server.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Servers\\Server.cs",
+              "RelativeToolTip": "Servers\\Server.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAcwBIAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-19T14:35:26.649Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Room.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Servers\\Room.cs",
+              "RelativeDocumentMoniker": "Servers\\Room.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Servers\\Room.cs",
+              "RelativeToolTip": "Servers\\Room.cs",
+              "ViewState": "AgIAAPcAAAAAAAAAAAAcwAABAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-23T08:24:29.158Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "DatabaseManager.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Database\\DatabaseManager.cs",
+              "RelativeDocumentMoniker": "Database\\DatabaseManager.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Database\\DatabaseManager.cs",
+              "RelativeToolTip": "Database\\DatabaseManager.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAgAAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-08T07:03:50.769Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "RoomController.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\RoomController.cs",
+              "RelativeDocumentMoniker": "Controller\\RoomController.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\RoomController.cs",
+              "RelativeToolTip": "Controller\\RoomController.cs",
+              "ViewState": "AgIAACIAAAAAAAAAAAAYwCoAAABVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-23T08:21:18.193Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\UserController.cs",
+              "RelativeDocumentMoniker": "Controller\\UserController.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\UserController.cs",
+              "RelativeToolTip": "Controller\\UserController.cs",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAkwFsAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-20T05:09:24.632Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "BaseController.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\BaseController.cs",
+              "RelativeDocumentMoniker": "Controller\\BaseController.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\BaseController.cs",
+              "RelativeToolTip": "Controller\\BaseController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-20T05:05:07.506Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "ControllerManager.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\ControllerManager.cs",
+              "RelativeDocumentMoniker": "Controller\\ControllerManager.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Controller\\ControllerManager.cs",
+              "RelativeToolTip": "Controller\\ControllerManager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC4AAABrAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-20T05:07:43.467Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Message.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Tool\\Message.cs",
+              "RelativeDocumentMoniker": "Tool\\Message.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\Tool\\Message.cs",
+              "RelativeToolTip": "Tool\\Message.cs",
+              "ViewState": "AgIAAIcAAAAAAAAAAAArwJAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-19T14:47:31.741Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "CacheManager.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\CacheManager.cs",
+              "RelativeDocumentMoniker": "CacheManager.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\CacheManager.cs",
+              "RelativeToolTip": "CacheManager.cs",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAswDcAAAB2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-26T09:08:23.698Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "CountdownTimer.cs",
+              "DocumentMoniker": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\CountdownTimer.cs",
+              "RelativeDocumentMoniker": "CountdownTimer.cs",
+              "ToolTip": "E:\\UnityProject\\SocketClient\\Server\\SocketMultiplayerGameServer\\CountdownTimer.cs",
+              "RelativeToolTip": "CountdownTimer.cs",
+              "ViewState": "AgIAACwAAAAAAAAAAAAgwCwAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-28T08:04:33.715Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

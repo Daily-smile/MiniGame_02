@@ -1,0 +1,140 @@
+syntax = "proto3";
+package SocketGameProtocol;
+
+enum RequestCode
+{
+	RequestNone = 0;
+	User = 1; // 用户
+	Room = 2; // 房间
+	Game = 3; // 游戏中的请求
+}
+
+enum ActionCode
+{
+	ActionNone = 0;
+	Logon = 1; // 注册
+	Login = 2; // 登录
+	CreateRoom = 3; // 创建房间
+	FindRoom = 4; // 查询房间
+	JoinRoom = 5; // 加入房间
+	DestroyRoom = 6; // 解散房间
+	QuitRoom = 7; // 退出房间
+	SwitchRoomMaster = 8; // 切换房主
+	KickoutRoom = 9; // 踢出房间(房主)
+	RoomAddPlayer = 10; // 房间新加入玩家
+	RoomRemovePlayer = 11; // 房间新减少玩家
+	RoomMasterChange = 12; // 房主变化
+	RoomMasterStartGame = 13; // 房主点击了开始游戏
+	NoticeInRoomDestroy = 14; // 通知在该房间的玩家房间已经销毁了
+	RoomMessageUpdate = 15; // 房间内的消息列表数据更新
+	StartGame = 16; // 开始游戏
+	QuitMatch = 17; // 退出匹配
+	Heartbeat = 18; // 心跳
+	Reconnect = 19; // 重连
+	PlayerDisconnect = 20; // 玩家断线
+    PlayerReconnect = 21; // 玩家重连
+    RoomStateUpdate = 22; // 房间状态更新
+    ReturnLogin = 23; // 返回登录
+    UpdatePlayer = 24; // 玩家同步更新
+	EnterGameSceneRquestStart = 25; // 进入游戏场景请求开始游戏
+}
+
+enum ReturnCode
+{
+	ReturnNone = 0;
+	Successed = 1;
+	Fail = 2;
+	NotRoom = 3; // 没有房间
+	NotFindRoom = 4; // 没有找到房间
+	ExistSomeRoom = 5; // 存在同名房间
+	StartMatchGame = 6; // 游戏开始匹配中
+	EndMatchGame = 7; // 游戏匹配结束
+	RoomIsFull = 8; // 房间人数已满
+	RoomIsGame = 9; // 房间处于游戏状态
+	GameError = 10; // 游戏错误
+}
+
+enum GameModel
+{
+	None = 0;
+	Double = 1; // 双人匹配模式
+	RoomTeam = 2; // 房间组队模式
+}
+
+message MainPack
+{
+    bool isNotReturn = 1; // 服务器是否是不需要返回响应
+	RequestCode requestcode = 2;
+	ActionCode actioncode = 3;
+	ReturnCode returncode = 4;
+	LogonPack logonpack = 5;
+	LoginPack loginpack = 6;
+	repeated RoomPack roompack = 7;
+	QueryRoomPack queryroom = 8;
+	ChatRoomPack chatRoom = 9;
+	GamePack gamepack = 10;
+	string session_id = 11; // 会话ID，用于重连
+    bool is_reconnect = 12; // 是否是重连请求
+}
+
+message LoginPack
+{
+	string username = 1; // 用户名
+	string password = 2; // 密码
+}
+
+message LogonPack
+{
+	string username = 1; // 用户名
+	string password = 2; // 密码
+}
+
+message PlayerData
+{
+	string username = 1;
+	int32 playerID = 2;
+	int32 hp = 3;
+	PlayerInfoPack playerInfo = 4; // 玩家信息状态
+}
+
+message RoomPack
+{
+	int32 roomID = 1;
+	string roomname = 2;
+	int32 maxnum = 3; // 房间最大人数
+	int32 status = 4; // 房间状态：1 等待加入；2 房间已满人；3 游戏中
+	PlayerData roomMaster = 5; // 房主信息
+	repeated PlayerData playerList = 6; // 房间玩家列表
+}
+
+message QueryRoomPack
+{
+	int32 roomID = 1;
+	string roomName = 2;
+	int32 roomMaxNum = 3;
+	int32 roomStatus = 4; // 房间状态：1 等待加入；2 房间已满人；3 游戏中
+}
+
+message ChatRoomPack
+{
+	int32 roomID = 1;
+	PlayerData player = 2;
+	string chatContent = 3;
+}
+
+message GamePack
+{
+	GameModel gameModel = 1;
+	PlayerData player = 2;
+}
+
+message PlayerInfoPack
+{
+	float posX = 1;
+	float posY = 2;
+	float posZ = 3;
+	bool isFlipX = 4;
+	bool isDead = 5;
+	string playAnim = 6;
+	int32 StarCount = 7;
+}
