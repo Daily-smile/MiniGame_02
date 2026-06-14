@@ -188,4 +188,20 @@ public static class MessageEvent
     public static readonly string MirrorStarCountChanged = "MirrorStarCountChanged";
     /// <summary>Mirror SyncVar变更事件：翻转方向变化 (args: oldVal, newVal)</summary>
     public static readonly string MirrorFlipXChanged = "MirrorFlipXChanged";
+
+    // ──────────── 资源热更新事件 ────────────
+    /// <summary>开始版本检查</summary>
+    public static readonly string OnPatchCheckStart = "OnPatchCheckStart";
+    /// <summary>获取到版本号 (args: string remoteVersion, string localVersion)</summary>
+    public static readonly string OnPatchVersionGet = "OnPatchVersionGet";
+    /// <summary>开始下载更新 (args: int totalCount, long totalSizeBytes)</summary>
+    public static readonly string OnPatchDownloadStart = "OnPatchDownloadStart";
+    /// <summary>下载进度更新 (args: int currentCount, int totalCount, long currentSizeBytes, long totalSizeBytes)</summary>
+    public static readonly string OnPatchDownloadProgress = "OnPatchDownloadProgress";
+    /// <summary>下载完成</summary>
+    public static readonly string OnPatchDownloadComplete = "OnPatchDownloadComplete";
+    /// <summary>下载失败 (args: string errorMsg, int retryCount)</summary>
+    public static readonly string OnPatchDownloadFailed = "OnPatchDownloadFailed";
+    /// <summary>热更新流程结束（无论成功/失败/跳过） (args: bool success, string message)</summary>
+    public static readonly string OnPatchFinish = "OnPatchFinish";
 }

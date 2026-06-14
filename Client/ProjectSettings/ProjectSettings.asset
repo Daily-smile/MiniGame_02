@@ -165,6 +165,7 @@ PlayerSettings:
   applicationIdentifier:
     Android: com.DefaultCompany.SocketClient
     Standalone: com.DefaultCompany.SocketClient
+    iPhone: com.DefaultCompany.SocketClient
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -964,4 +965,4 @@ PlayerSettings:
   hmiLoadingImage: {fileID: 0}
   platformRequiresReadableAssets: 0
   virtualTexturingSupportEnabled: 0
-  insecureHttpOption: 0
+  insecureHttpOption: 2

@@ -19,7 +19,7 @@ public class GameWinPanel : BasePanel
         againBtn = transform.Find("AgainBtn").GetComponent<Button>();
         againBtn.onClick.AddListener(OnClickAgainBtn);
         stars = transform.Find("Star").GetComponentsInChildren<Image>();
-        SpriteAtlas atlas = ResourceManager.Instance.LoadAsset<SpriteAtlas>("Atlas/UI");
+        SpriteAtlas atlas = ResourceManager.Instance.LoadAsset<SpriteAtlas>("Atlas_UI");
         blueStar = atlas.GetSprite("blue_star");
         grayStar = atlas.GetSprite("blue_star_outline");
     }

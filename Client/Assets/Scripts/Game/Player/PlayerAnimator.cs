@@ -163,7 +163,7 @@ public class PlayerAnimator : MonoBehaviour
         GameObject fire = ObjectPool.instance.GetInPool("Fireball");
         if (fire == null)
         {
-            GameObject prefab = ResourceManager.Instance.LoadAsset<GameObject>("Bullets/Fireball");
+            GameObject prefab = ResourceManager.Instance.LoadAsset<GameObject>("Bullets_Fireball");
             if (prefab == null) return;
             fire = GameObject.Instantiate(prefab);
             fire.name = "Fireball";

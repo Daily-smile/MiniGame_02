@@ -247,7 +247,7 @@ public class MirrorPlayer : NetworkBehaviour
         GameObject fire = ObjectPool.instance.GetInPool("Fireball");
         if (fire == null)
         {
-            fire = GameObject.Instantiate(ResourceManager.Instance.LoadAsset<GameObject>("Bullets/Fireball"));
+            fire = GameObject.Instantiate(ResourceManager.Instance.LoadAsset<GameObject>("Bullets_Fireball"));
             fire.name = "Fireball";
         }
         fire.transform.parent = null;

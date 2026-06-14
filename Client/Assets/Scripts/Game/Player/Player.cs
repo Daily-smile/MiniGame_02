@@ -312,7 +312,7 @@ public class Player : IDisposable
         onPropChanged?.Invoke(propType, propList[propType]);
         if (isSelf)
         {
-            GameObject bombPrefab = ResourceManager.Instance.LoadAsset<GameObject>("Props/Bomb");
+            GameObject bombPrefab = ResourceManager.Instance.LoadAsset<GameObject>("Props_Bomb");
             GameObject bombObj = GameObject.Instantiate(bombPrefab);
             bombObj.name = bombPrefab.name;
             bombObj.transform.position = PlayObj.position;

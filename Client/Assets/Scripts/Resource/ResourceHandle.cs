@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using YooAsset;
 
 public class ResourceHandle
 {
@@ -8,11 +9,13 @@ public class ResourceHandle
     public int ReferenceCount { get; private set; }
     public List<string> Dependencies { get; private set; }
 
+    internal AssetHandle YooAssetHandle { get; set; }
+
     public ResourceHandle(string path, Object asset)
     {
         Path = path;
         Asset = asset;
-        ReferenceCount = 1; // 初始引用计数为1
+        ReferenceCount = 1;
         Dependencies = new List<string>();
     }
 

@@ -20,4 +20,6 @@ public enum UIPanelType
     GameOver,
     GameWin,
     PausePanel,
+    /// <summary>热更新下载面板</summary>
+    Update,
 }

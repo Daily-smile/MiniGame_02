@@ -60,9 +60,18 @@ public class UIManager : Singleton<UIManager>
     {
         if (!panelDict.ContainsKey(type) || panelDict[type] == null)
         {
+            if (canvas == null)
+            {
+                Debug.LogWarning("[UIManager] Canvas not ready yet, skip panel spawn.");
+                return null;
+            }
             Transform setParent = canvas.transform.Find("UI");
-            //GameObject newObj = Resources.Load(panelPath[type]) as GameObject;
             GameObject newObj = ResourceManager.Instance.LoadAsset<GameObject>(panelPath[type]);
+            if (newObj == null)
+            {
+                Debug.LogWarning($"[UIManager] Failed to load panel asset: {panelPath[type]}");
+                return null;
+            }
             GameObject newPrefab = GameObject.Instantiate(newObj);
             newPrefab.name = newObj.name;
             newPrefab.transform.SetParent(setParent, false);
@@ -81,28 +90,31 @@ public class UIManager : Singleton<UIManager>
 
     private void InitPanel()
     {
-        panelPath.Add(UIPanelType.Message, "Panel/MessagePanel");
-        panelPath.Add(UIPanelType.Start, "Panel/StartPanel");
-        panelPath.Add(UIPanelType.Logon, "Panel/LogonPanel");
-        panelPath.Add(UIPanelType.Login, "Panel/LoginPanel");
-        panelPath.Add(UIPanelType.Game, "Panel/GamePanel");
-        panelPath.Add(UIPanelType.Room, "Panel/RoomListPanel");
-        panelPath.Add(UIPanelType.RoomList, "Panel/RoomListPanel");
-        panelPath.Add(UIPanelType.Tip, "Panel/TipPanel");
-        panelPath.Add(UIPanelType.Disconnect, "Panel/DisconnectPanel");
-        panelPath.Add(UIPanelType.GameUI, "Panel/GameUIPanel");
-        panelPath.Add(UIPanelType.GameLoad, "Panel/GameLoadPanel");
-        panelPath.Add(UIPanelType.GameOver, "Panel/GameOverPanel");
-        panelPath.Add(UIPanelType.PausePanel, "Panel/PausePanel");
-        panelPath.Add(UIPanelType.GameWin, "Panel/GameWinPanel");
-        panelPath.Add(UIPanelType.DoubleModelMatch, "Panel/DoubleModelMatchPanel");
+        panelPath.Add(UIPanelType.Message, "Panel_MessagePanel");
+        panelPath.Add(UIPanelType.Start, "Panel_StartPanel");
+        panelPath.Add(UIPanelType.Logon, "Panel_LogonPanel");
+        panelPath.Add(UIPanelType.Login, "Panel_LoginPanel");
+        panelPath.Add(UIPanelType.Game, "Panel_GamePanel");
+        panelPath.Add(UIPanelType.Room, "Panel_RoomListPanel");
+        panelPath.Add(UIPanelType.RoomList, "Panel_RoomListPanel");
+        panelPath.Add(UIPanelType.Tip, "Panel_TipPanel");
+        panelPath.Add(UIPanelType.Disconnect, "Panel_DisconnectPanel");
+        panelPath.Add(UIPanelType.GameUI, "Panel_GameUIPanel");
+        panelPath.Add(UIPanelType.GameLoad, "Panel_GameLoadPanel");
+        panelPath.Add(UIPanelType.GameOver, "Panel_GameOverPanel");
+        panelPath.Add(UIPanelType.PausePanel, "Panel_PausePanel");
+        panelPath.Add(UIPanelType.GameWin, "Panel_GameWinPanel");
+        panelPath.Add(UIPanelType.DoubleModelMatch, "Panel_DoubleModelMatchPanel");
+        panelPath.Add(UIPanelType.Update, "Boot_UpdatePanel");
     }
 
     public void LoadCacheUIPanel(params UIPanelType[] uiList)
     {
         for (int i = 0; i < uiList.Length; i++)
         {
-            SpawnPanel(uiList[i]).gameObject.SetActive(false);
+            BasePanel panel = SpawnPanel(uiList[i]);
+            if (panel != null)
+                panel.gameObject.SetActive(false);
         }
     }
 
@@ -152,9 +164,12 @@ public class UIManager : Singleton<UIManager>
         {
             panel = SpawnPanel(panelType);
         }
-        panel.OnEnter(callback);
-        if (topUI != panelType)
-            panelStack.Push(panel);
+        if (panel != null)
+        {
+            panel.OnEnter(callback);
+            if (topUI != panelType)
+                panelStack.Push(panel);
+        }
         return panel;
     }
 

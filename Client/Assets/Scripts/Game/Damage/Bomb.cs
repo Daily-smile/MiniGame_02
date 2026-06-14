@@ -16,6 +16,8 @@ public class Bomb : MonoBehaviour
     Coroutine playBombAnim;
     SpriteRenderer timerSprite;
     Sprite[] numbers;
+    private static SpriteAtlas _cachedAtlas;
+    private static Sprite[] _cachedNumbers;
     Tilemap destructibleTilemap;
     Tilemap decorationTilemap;
     Transform centerPoint;
@@ -26,14 +28,18 @@ public class Bomb : MonoBehaviour
         animator = GetComponent<Animator>();
         Transform timerTran = transform.Find("timer");
         if (timerTran != null) timerSprite = timerTran.GetComponent<SpriteRenderer>();
-        SpriteAtlas atlas = ResourceManager.Instance.LoadAsset<SpriteAtlas>("Atlas/GameScene");
-        if (atlas != null)
+        if (_cachedAtlas == null)
         {
-            numbers = new Sprite[3];
-            numbers[0] = atlas.GetSprite("hud_character_1");
-            numbers[1] = atlas.GetSprite("hud_character_2");
-            numbers[2] = atlas.GetSprite("hud_character_3");
+            _cachedAtlas = ResourceManager.Instance.LoadAsset<SpriteAtlas>("Atlas_GameScene");
+            if (_cachedAtlas != null)
+            {
+                _cachedNumbers = new Sprite[3];
+                _cachedNumbers[0] = _cachedAtlas.GetSprite("hud_character_1");
+                _cachedNumbers[1] = _cachedAtlas.GetSprite("hud_character_2");
+                _cachedNumbers[2] = _cachedAtlas.GetSprite("hud_character_3");
+            }
         }
+        numbers = _cachedNumbers;
 
         centerPoint = transform.Find("centerPoint");
         if (GameManager.Instance.gameModel != GameManager.GameModel.Infinity)

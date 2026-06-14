@@ -246,7 +246,7 @@ public class GameReferee : Singleton<GameReferee>
 
     public void GeneratePlayer()
     {
-        GameObject rolePrefab = ResourceManager.Instance.LoadAsset<GameObject>("Roles/Player");
+        GameObject rolePrefab = ResourceManager.Instance.LoadAsset<GameObject>("Roles_Player");
         if (rolePrefab == null)
         {
             Debug.LogError("Generate player fail!");
@@ -271,7 +271,7 @@ public class GameReferee : Singleton<GameReferee>
 
     public void GenerateGameScene()
     {
-        GameObject enPrefab = ResourceManager.Instance.LoadAsset<GameObject>("Maps/Environment");
+        GameObject enPrefab = ResourceManager.Instance.LoadAsset<GameObject>("Maps_Environment");
         if (enPrefab == null)
         {
             Debug.LogError("Generate game environment fail!");
@@ -304,7 +304,7 @@ public class GameReferee : Singleton<GameReferee>
             }
             else if (isSelf)
             {
-                GameObject rolePrefab = ResourceManager.Instance.LoadAsset<GameObject>("Roles/Player");
+                GameObject rolePrefab = ResourceManager.Instance.LoadAsset<GameObject>("Roles_Player");
                 if (rolePrefab == null)
                 {
                     Debug.LogError("Generate player fail!");
@@ -322,7 +322,7 @@ public class GameReferee : Singleton<GameReferee>
             }
             else
             {
-                GameObject netPlayerPrefab = ResourceManager.Instance.LoadAsset<GameObject>("Roles/NetPlayer");
+                GameObject netPlayerPrefab = ResourceManager.Instance.LoadAsset<GameObject>("Roles_NetPlayer");
                 if (netPlayerPrefab == null)
                 {
                     Debug.LogError("Generate NetPlayer fail!");

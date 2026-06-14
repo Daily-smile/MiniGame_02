@@ -38,7 +38,7 @@ public class GameLoadPanel : BasePanel
     }
     public override void Dispose()
     {
-        
+
     }
 
     public override void OnEnter(Action<BasePanel> callback = null)
@@ -104,33 +104,32 @@ public class GameLoadPanel : BasePanel
         timer = 0;
         for (int i = 0; i < pathArr.Length; i++)
         {
-            ResourceRequest progress = Resources.LoadAsync<GameObject>(pathArr[i]);
-            while (true)
+            bool loadDone = false;
+            string path = pathArr[i];
+            ResourceManager.Instance.LoadAssetAsync<GameObject>(path, (obj) =>
+            {
+                if (obj != null)
+                {
+                    ResourceManager.Instance.AddAsset(path, obj);
+                }
+                loadDone = true;
+            });
+
+            while (!loadDone)
             {
                 if (timer < enterAnimTotalTime * addNum)
                 {
                     timer += Time.deltaTime;
-                    float curProgressOffset = Mathf.Clamp01(1 - (float)progress.progress) * addNum;
-                    float curProgress = Mathf.Clamp(timer / enterAnimTotalTime - curProgressOffset, 0, addNum);
-                    float newProgress = 0.25f + curProgress + addNum * i;
-                    progressSlider.value = newProgress * 100f;
-                    animator.Play("GameLoad", 0, newProgress);
                 }
-                else if (progress.isDone)
-                {
-                    GameObject obj = progress.asset as GameObject;
-                    ResourceManager.Instance.AddAsset(pathArr[i], obj);
-                    float newProgress = 0.25f + addNum * (i + 1);
-                    progressSlider.value = newProgress * 100f;
-                    animator.Play("GameLoad", 0, newProgress);
-                    break;
-                }
-                else
-                {
-                    timer = enterAnimTotalTime * addNum;
-                }
+                float curProgress = Mathf.Clamp01(timer / (enterAnimTotalTime * addNum));
+                float newProgress = 0.25f + curProgress * addNum + addNum * i;
+                progressSlider.value = newProgress * 100f;
+                animator.Play("GameLoad", 0, newProgress);
                 yield return new WaitForEndOfFrame();
             }
+            float finalProgress = 0.25f + addNum * (i + 1);
+            progressSlider.value = finalProgress * 100f;
+            animator.Play("GameLoad", 0, finalProgress);
             timer = 0;
             yield return new WaitForEndOfFrame();
         }
@@ -146,33 +145,32 @@ public class GameLoadPanel : BasePanel
         timer = 0;
         for (int i = 0; i < pathArr.Length; i++)
         {
-            ResourceRequest progress = Resources.LoadAsync<GameObject>(pathArr[i]);
-            while (true)
+            bool loadDone = false;
+            string path = pathArr[i];
+            ResourceManager.Instance.LoadAssetAsync<GameObject>(path, (obj) =>
+            {
+                if (obj != null)
+                {
+                    ResourceManager.Instance.AddAsset(path, obj);
+                }
+                loadDone = true;
+            });
+
+            while (!loadDone)
             {
                 if (timer < enterAnimTotalTime * addNum)
                 {
                     timer += Time.deltaTime;
-                    float curProgressOffset = Mathf.Clamp01(1 - (float)progress.progress) * addNum;
-                    float curProgress = Mathf.Clamp(timer / enterAnimTotalTime - curProgressOffset, 0, addNum);
-                    float newProgress = 0.25f + curProgress + addNum * i;
-                    progressSlider.value = newProgress * 100f;
-                    animator.Play("GameLoad", 0, newProgress);
                 }
-                else if (progress.isDone)
-                {
-                    GameObject obj = progress.asset as GameObject;
-                    ResourceManager.Instance.AddAsset(pathArr[i], obj);
-                    float newProgress = 0.25f + addNum * (i + 1);
-                    progressSlider.value = newProgress * 100f;
-                    animator.Play("GameLoad", 0, newProgress);
-                    break;
-                }
-                else
-                {
-                    timer = enterAnimTotalTime * addNum;
-                }
+                float curProgress = Mathf.Clamp01(timer / (enterAnimTotalTime * addNum));
+                float newProgress = 0.25f + curProgress * addNum + addNum * i;
+                progressSlider.value = newProgress * 100f;
+                animator.Play("GameLoad", 0, newProgress);
                 yield return new WaitForEndOfFrame();
             }
+            float finalProgress = 0.25f + addNum * (i + 1);
+            progressSlider.value = finalProgress * 100f;
+            animator.Play("GameLoad", 0, finalProgress);
             timer = 0;
             yield return new WaitForEndOfFrame();
         }
@@ -198,12 +196,12 @@ public class GameLoadPanel : BasePanel
                 loadText.text = MessageEvent.allMessageStr[MessageEventType.LoadingAssetsStr];
                 if (GameManager.Instance.gameModel != GameManager.GameModel.Infinity)
                 {
-                    string[] loadPaths = new string[] { "Maps/Environment", "Roles/Player", "Roles/NetPlayer", "Bullets/Fireball" };
+                    string[] loadPaths = new string[] { "Maps_Environment", "Roles_Player", "Roles_NetPlayer", "Bullets_Fireball" };
                     yield return LoadEnterGameAssets(loadPaths);
                 }
                 else
                 {
-                    string[] loadPaths = new string[] { "Roles/Player" };
+                    string[] loadPaths = new string[] { "Roles_Player" };
                     yield return LoadEnterInfinityGame(loadPaths);
                 }
                 break;
@@ -225,7 +223,7 @@ public class GameLoadPanel : BasePanel
             ui.Initialize(selfPlay);
             if (GameManager.Instance.gameModel == GameManager.GameModel.Infinity)
             {
-                GameObject generatorPrefab = Resources.Load<GameObject>("PlatformGenerator");
+                GameObject generatorPrefab = ResourceManager.Instance.LoadAsset<GameObject>("Generator_PlatformGenerator");
                 GameObject generator = GameObject.Instantiate(generatorPrefab);
                 InfinitePlatformGenerator platformGenerator = generator.GetComponent<InfinitePlatformGenerator>();
                 platformGenerator.player = selfPlay.PlayObj;
@@ -235,7 +233,6 @@ public class GameLoadPanel : BasePanel
                 GameObject.Destroy(selfPlay.PlayObj.GetComponent<PlayerDeathCheck>());
             }
             EventDispatcher.PostEvent(MessageEvent.OnRegistSelfPlayer, this, selfPlay);
-            // 单人模式和无限模式不需要等待其他玩家，直接开始
             bool isOnlineMultiplayer = GameManager.Instance.IsLoginServer && GameManager.Instance.connectState
                 && GameManager.Instance.gameModel != GameManager.GameModel.Single
                 && GameManager.Instance.gameModel != GameManager.GameModel.Infinity;

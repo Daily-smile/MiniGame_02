@@ -23,18 +23,180 @@ MonoBehaviour:
     LocationToLower: 0
     IncludeAssetGUID: 0
     AutoCollectShaders: 1
-    IgnoreRuleName: 
+    IgnoreRuleName: NormalIgnoreRule
     Groups:
-    - GroupName: ugui
-      GroupDesc: "UI\u9762\u677F"
+    - GroupName: Boot
+      GroupDesc: "\u542F\u52A8\u52A0\u8F7D\u7684\u8D44\u6E90"
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/Res
-        CollectorGUID: 0d49c36e002658946ad4645b25d8d0fe
+      - CollectPath: Assets/GameAssets/Boot
+        CollectorGUID: a41e990464fecb5499025b2ad4487443
         CollectorType: 0
-        AddressRuleName: AddressByFileName
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackGroup
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: UI
+      GroupDesc: "\u6240\u6709UI\u7684\u8D44\u6E90"
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/GameAssets/Panel
+        CollectorGUID: dfbc6829cd17a894182a31bbebf6cf3b
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
         PackRuleName: PackDirectory
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
+      - CollectPath: Assets/GameAssets/Atlas
+        CollectorGUID: bf8aad28c7d95f04287e410251a593ef
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: Game
+      GroupDesc: "\u6E38\u620F\u529F\u80FD\u73A9\u6CD5\u76F8\u5173"
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/GameAssets/Roles
+        CollectorGUID: 4e1c6e9c72545dd46bf7043240031211
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/GameAssets/Maps
+        CollectorGUID: 9bf1cee3e8c335647a4ce45d2e99efe1
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/GameAssets/Bullets
+        CollectorGUID: 10959b5ad20dad547b127a9f5503b034
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/GameAssets/Attacks
+        CollectorGUID: 6fbad3cd803e4e94387873af4cf074e6
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/GameAssets/Props
+        CollectorGUID: 5b9ddc88cd7639d4abc23d9d19b0f0c3
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/GameAssets/Obstacles
+        CollectorGUID: 85c411e41590c6848bc626c79fe1cd27
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/GameAssets/Generator
+        CollectorGUID: ef5b704be33002e49b47cccdb4990fbe
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/GameAssets/PlatformData
+        CollectorGUID: 0f7cfe5221afffe4692a54623f153ca2
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/GameAssets/Animations
+        CollectorGUID: 7fc3314a24d92a84ba96fb45e450327a
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/GameAssets/Core
+        CollectorGUID:
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags:
+        UserData:
+      - CollectPath: Assets/GameAssets/Sprites/Backgrounds
+        CollectorGUID:
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags:
+        UserData:
+      - CollectPath: Assets/GameAssets/Sprites/Characters
+        CollectorGUID:
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags:
+        UserData:
+      - CollectPath: Assets/GameAssets/Sprites/Enemies
+        CollectorGUID:
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags:
+        UserData:
+      - CollectPath: Assets/GameAssets/Sprites/Boss
+        CollectorGUID:
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags:
+        UserData:
+      - CollectPath: Assets/GameAssets/Sprites/Bomb
+        CollectorGUID:
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags:
+        UserData:
+      - CollectPath: Assets/GameAssets/Sprites/Frog_Attack
+        CollectorGUID:
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags:
+        UserData:
+      - CollectPath: Assets/GameAssets/Sprites/Tiles
+        CollectorGUID:
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags:
+        UserData:

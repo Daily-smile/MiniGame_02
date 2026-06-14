@@ -84,9 +84,7 @@ public class GameManager : UnitySingleton<GameManager>
 
     public override void Awake()
     {
-        UIManager.instance.OpenPanel(UIPanelType.Message);
         AddObserverEvents();
-        UIManager.instance.LoadCacheUIPanel(UIPanelType.Game, UIPanelType.Disconnect, UIPanelType.Tip);
         GameReferee.instance.Initialize();
         base.Awake();
     }
@@ -143,6 +141,8 @@ public class GameManager : UnitySingleton<GameManager>
 
     public void StartGame()
     {
+        UIManager.instance.OpenPanel(UIPanelType.Message);
+        UIManager.instance.LoadCacheUIPanel(UIPanelType.Game, UIPanelType.Disconnect, UIPanelType.Tip);
         UIManager.instance.OpenPanel(UIPanelType.Start);
     }
 

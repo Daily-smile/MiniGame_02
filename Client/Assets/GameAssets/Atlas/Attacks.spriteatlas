@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Attacks
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: a722c6b9d014b3146bd6969b88b4a9a3, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 2961ea919b7fa594c9cad44a99f3c39c: 21300000
+    - 362b59c1dc3c7f94794799d6ed7a49c9: 21300000
+    - 0b9c0e129367d60448d570b8bfb31e7d: 21300000
+    - 8d44fdb4763ed1f4d897f4ff752af228: 21300000
+    - 951528e65227e5d4e8307f4f6a103dce: 21300000
+    - b3929c3831229b343a4c1dc50e470c29: 21300000
+    - 4436ad8ad4f61004aa8d78dac6be656a: 21300000
+    - d2fd982b6fbf0f54a8e634cd2b234f68: 21300000
+    - 04ad132d71f2e9e4f9594f2ac9302858: 21300000
+    - 25aa273d639883d4d9d4c7d0ef3acc65: 21300000
+    - 60300a2ec758280408d71a3b33d3c4ad: 21300000
+    - 4059f55e6f4f7254e983f5bce36f3ea8: 21300000
+    - 057dd22ff46f6cb41b7adb6514d393ef: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 2961ea919b7fa594c9cad44a99f3c39c, type: 3}
+  - {fileID: 21300000, guid: 362b59c1dc3c7f94794799d6ed7a49c9, type: 3}
+  - {fileID: 21300000, guid: 0b9c0e129367d60448d570b8bfb31e7d, type: 3}
+  - {fileID: 21300000, guid: 8d44fdb4763ed1f4d897f4ff752af228, type: 3}
+  - {fileID: 21300000, guid: 951528e65227e5d4e8307f4f6a103dce, type: 3}
+  - {fileID: 21300000, guid: b3929c3831229b343a4c1dc50e470c29, type: 3}
+  - {fileID: 21300000, guid: 4436ad8ad4f61004aa8d78dac6be656a, type: 3}
+  - {fileID: 21300000, guid: d2fd982b6fbf0f54a8e634cd2b234f68, type: 3}
+  - {fileID: 21300000, guid: 04ad132d71f2e9e4f9594f2ac9302858, type: 3}
+  - {fileID: 21300000, guid: 25aa273d639883d4d9d4c7d0ef3acc65, type: 3}
+  - {fileID: 21300000, guid: 60300a2ec758280408d71a3b33d3c4ad, type: 3}
+  - {fileID: 21300000, guid: 4059f55e6f4f7254e983f5bce36f3ea8, type: 3}
+  - {fileID: 21300000, guid: 057dd22ff46f6cb41b7adb6514d393ef, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - frog_attack_01
+  - frog_attack_11
+  - frog_attack_09
+  - frog_attack_13
+  - frog_attack_06
+  - frog_attack_03
+  - frog_attack_04
+  - frog_attack_08
+  - frog_attack_02
+  - frog_attack_05
+  - frog_attack_10
+  - frog_attack_07
+  - frog_attack_12
+  m_RenderDataMap: {}
+  m_Tag: Attacks
+  m_IsVariant: 0

@@ -27,7 +27,7 @@ public class AttackState : IState
         manager.parameter.moveFrameInput.x = 0;
         if (attackPrefab == null)
         {
-            GameObject prefab = ResourceManager.Instance.LoadAsset<GameObject>("Attacks/half_moon_slash");
+            GameObject prefab = ResourceManager.Instance.LoadAsset<GameObject>("Attacks_half_moon_slash");
             attackPrefab = GameObject.Instantiate(prefab);
             attackPrefab.name = prefab.name;
             attackSprite = attackPrefab.GetComponent<SpriteRenderer>();

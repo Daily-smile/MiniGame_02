@@ -22,6 +22,7 @@ public class GameUIPanel : BasePanel
     Player playerData;
     PropType curSelectProp = PropType.None;
     public ContestantPlayer[] players;
+    private SpriteAtlas _gameSceneAtlas;
     public override void Init()
     {
         if (isInit)
@@ -51,6 +52,7 @@ public class GameUIPanel : BasePanel
         PropRoot = transform.Find("Prop");
         propItemPrefab = PropRoot.Find("item");
         propItemPrefab.gameObject.SetActive(false);
+        _gameSceneAtlas = ResourceManager.Instance.LoadAsset<SpriteAtlas>("Atlas_GameScene");
         healthBar = transform.Find("BossHealth").GetComponent<HealthBar>();
         healthBar.gameObject.SetActive(false);
 
@@ -179,9 +181,9 @@ public class GameUIPanel : BasePanel
         if (!propItems.ContainsKey(propType))
         {
             propItems.Add(propType, GameObject.Instantiate(propItemPrefab.gameObject, PropRoot));
-            SpriteAtlas spriteAltas = ResourceManager.Instance.LoadAsset<SpriteAtlas>("Atlas/GameScene");
-            Sprite sprite = spriteAltas.GetSprite($"{propType}");
-            propItems[propType].transform.Find("icon").GetComponent<Image>().sprite = sprite;
+            Sprite sprite = _gameSceneAtlas != null ? _gameSceneAtlas.GetSprite($"{propType}") : null;
+            if (sprite != null)
+                propItems[propType].transform.Find("icon").GetComponent<Image>().sprite = sprite;
             propItems[propType].transform.GetComponent<Toggle>().onValueChanged.AddListener((isOn)=>OnPropSelect(isOn, propType));
         }
         else if (!propItems[propType].activeSelf)
