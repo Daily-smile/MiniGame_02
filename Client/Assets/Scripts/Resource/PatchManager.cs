@@ -71,6 +71,27 @@ public class PatchManager
     /// </summary>
     public bool UserSkippedUpdate { get; set; }
 
+    /// <summary>
+    /// 用户是否已点击"进入游戏"（下载完成后由 UI 设置）
+    /// </summary>
+    public bool UserReadyToEnter { get; set; }
+
+    /// <summary>
+    /// 用户是否已点击重试（下载失败后由 UI 设置）
+    /// </summary>
+    public bool UserRequestedRetry { get; set; }
+
+    /// <summary>
+    /// 当前下载是否成功（DoDownload 执行后读取）
+    /// </summary>
+    private bool _downloadSuccess;
+    private bool _lastManifestLoadSuccess;
+
+    /// <summary>
+    /// 资源包初始化是否成功（InitPackageAsync 完成后读取，true 表示资源和 UI 可正常加载）
+    /// </summary>
+    public bool InitSuccess { get; private set; } = true;
+
     #region Version Persistence
 
     /// <summary>
@@ -121,6 +142,7 @@ public class PatchManager
     {
         _retryCount = 0;
         NeedUpdate = false;
+        _downloadSuccess = false;
         TotalDownloadSize = 0;
         TotalDownloadCount = 0;
 
@@ -163,6 +185,7 @@ public class PatchManager
         if (initOp.Status != EOperationStatus.Succeeded)
         {
             Debug.LogError($"[PatchManager] Editor init failed: {initOp.Error}");
+            InitSuccess = false;
             yield break;
         }
 
@@ -173,6 +196,7 @@ public class PatchManager
         if (versionOp.Status != EOperationStatus.Succeeded)
         {
             Debug.LogError($"[PatchManager] Editor version request failed: {versionOp.Error}");
+            InitSuccess = false;
             yield break;
         }
 
@@ -183,6 +207,7 @@ public class PatchManager
         if (manifestOp.Status != EOperationStatus.Succeeded)
         {
             Debug.LogError($"[PatchManager] Editor manifest load failed: {manifestOp.Error}");
+            InitSuccess = false;
             yield break;
         }
 
@@ -249,6 +274,7 @@ public class PatchManager
         if (initOp.Status != EOperationStatus.Succeeded)
         {
             Debug.LogError($"[PatchManager] Package init failed: {initOp.Error}");
+            InitSuccess = false;
             yield break;
         }
 
@@ -258,10 +284,25 @@ public class PatchManager
         LocalVersion = GetLocalVersion(packageName);
         string loadVersion = LocalVersion;
 
+        // PlayerPrefs 有版本号时，先验证该版本的清单是否可用。
+        // App 覆盖安装后内置版本可能已变，PlayerPrefs 里的旧版本清单会找不到，
+        // 此时需要清除旧记录并回退到内置版本。
+        if (!string.IsNullOrEmpty(loadVersion))
+        {
+            yield return LoadManifestAndConfig(loadVersion);
+            if (!_lastManifestLoadSuccess)
+            {
+                Debug.LogWarning($"[PatchManager] Stored version '{loadVersion}' manifest unavailable, "
+                               + "clearing and falling back to builtin (app may have been updated).");
+                PlayerPrefs.DeleteKey($"ResourceVersion_{packageName}");
+                LocalVersion = "";
+                loadVersion = "";
+            }
+        }
+
         if (string.IsNullOrEmpty(loadVersion))
         {
-            // 首次启动：优先从内置资源（StreamingAssets）加载清单，本地 I/O 速度快
-            // 远端版本检查延后到 CheckAndUpdateAsync，使 UpdatePanel 能立即显示
+            // 首次启动 / 旧版本失效：优先从内置资源（StreamingAssets）加载清单
             yield return RequestBuiltinPackageVersion(packageName);
             loadVersion = RemoteVersion;
 
@@ -272,12 +313,34 @@ public class PatchManager
                 yield return RequestRemoteVersion();
                 loadVersion = RemoteVersion;
             }
+            else
+            {
+                // 将内置版本号持久化，避免下次启动时因 LocalVersion 为空而误判为需要更新
+                SaveLocalVersion(packageName, loadVersion);
+                LocalVersion = loadVersion;
+            }
         }
 
-        yield return LoadManifestAndConfig(loadVersion);
+        // 所有版本获取途径均失败，无法加载任何资源
+        if (string.IsNullOrEmpty(loadVersion))
+        {
+            Debug.LogError("[PatchManager] No version available — no builtin resources and no network.");
+            InitSuccess = false;
+            yield break;
+        }
 
-        // 尝试加载 RemoteConfig
-        TryLoadRemoteConfigFromPackage();
+        // 非首次启动且旧版本清单已验证可用，跳过重复加载
+        if (!_lastManifestLoadSuccess)
+        {
+            yield return LoadManifestAndConfig(loadVersion);
+        }
+
+        if (!_lastManifestLoadSuccess)
+        {
+            Debug.LogError($"[PatchManager] Manifest load failed, cannot initialize resources.");
+            InitSuccess = false;
+            yield break;
+        }
 
         // 注入 ResourceManager，使 UI 等资源可加载
         ResourceManager.Instance.SetPackage(_package);
@@ -290,6 +353,11 @@ public class PatchManager
 
     /// <summary>
     /// 远端版本检查 + 按策略下载（通过 EventDispatcher 广播事件给 UI）。
+    /// 新流程：
+    ///   1. 请求远端版本号 → 不可达则等用户跳过（等待期间持续后台重试）
+    ///   2. 有更新时预计算下载大小 → 自动开始下载
+    ///   3. 下载（支持重试）→ 完成后等用户"点击进入游戏"
+    ///   4. 下载失败 → 等用户选择重试或跳过
     /// </summary>
     private IEnumerator CheckAndDownloadUpdates()
     {
@@ -298,71 +366,94 @@ public class PatchManager
         // ── Step 1: 请求远端版本号 ──
         yield return RequestRemoteVersion();
 
-        // ── Step 2: 对比版本 ──
-        LocalVersion = GetLocalVersion(_packageName);
-        Debug.Log($"[PatchManager] Remote version: {RemoteVersion}, Local version: {LocalVersion}");
-
-        // 远端版本为空说明更新服务器不可达，等待用户点击跳过
+        // ── Step 2: 远端版本为空说明更新服务器不可达，等待用户点击跳过 ──
         if (string.IsNullOrEmpty(RemoteVersion))
         {
+            LocalVersion = GetLocalVersion(_packageName);
             Debug.Log("[PatchManager] Update server unreachable, waiting for user to skip...");
             EventDispatcher.PostEvent(MessageEvent.OnPatchVersionGet, this, RemoteVersion, LocalVersion);
             yield return WaitForUserSkip();
-            yield break;
+
+            // 用户点击了跳过，取消监听，跳过热更进入游戏
+            if (UserSkippedUpdate || string.IsNullOrEmpty(RemoteVersion))
+            {
+                yield break;
+            }
+            // 后台重试成功，继续执行下方版本对比（各分支有自己的广播）
         }
 
-        EventDispatcher.PostEvent(MessageEvent.OnPatchVersionGet, this, RemoteVersion, LocalVersion);
+        // ── Step 3: 对比版本 ──
+        LocalVersion = GetLocalVersion(_packageName);
+        Debug.Log($"[PatchManager] Remote version: {RemoteVersion}, Local version: {LocalVersion}");
 
-        NeedUpdate = !string.IsNullOrEmpty(RemoteVersion) && RemoteVersion != LocalVersion;
+        // 仅当远端版本严格高于本地时才更新，避免降级
+        // 版本号格式为 yyyy-MM-dd-HHmm，字符串可直接比较大小
+        NeedUpdate = string.Compare(RemoteVersion, LocalVersion) > 0;
 
         if (!NeedUpdate)
         {
-            Debug.Log("[PatchManager] Already up to date.");
-            // 已是最新，无需额外操作，当前清单已在 InitPackageAsync 中加载
+            Debug.Log("[PatchManager] Version up to date, verifying resource integrity...");
+
+            // ── 校验资源完整性 + 自动修复损坏/缺失文件 ──
+            yield return VerifyAndRepairResources();
+
+            // ── 清理旧版本残留文件（仅在清单可用时执行，避免误删）──
+            if (_lastManifestLoadSuccess)
+            {
+                yield return ClearUnusedCacheAsync();
+            }
+
+            // 校验/修复完成，等待用户点击进入
+            EventDispatcher.PostEvent(MessageEvent.OnPatchVersionGet, this, RemoteVersion, LocalVersion);
+            yield return WaitForUserReadyToEnter();
             yield break;
         }
 
-        // ── Step 3: 根据策略决定下载行为 ──
-        Debug.Log($"[PatchManager] Update strategy: {UpdateStrategy}");
+        // ── Step 4: 有更新，预计算下载大小，直接进入下载 ──
+        yield return PreComputeDownloadSize();
+        Debug.Log($"[PatchManager] Update available: {TotalDownloadCount} files, {FormatSize(TotalDownloadSize)}");
+        EventDispatcher.PostEvent(MessageEvent.OnPatchVersionGet, this, RemoteVersion, LocalVersion, TotalDownloadCount, TotalDownloadSize);
 
-        switch (UpdateStrategy)
+        // ── Step 5: 下载循环（支持重试）──
+        while (true)
         {
-            case EUpdateStrategy.Silent:
-                Debug.Log("[PatchManager] Silent mode: using local resources, will update on next launch.");
-                if (string.IsNullOrEmpty(LocalVersion))
+            yield return DoDownload();
+
+            if (_downloadSuccess)
+            {
+                // 下载成功，重新加载清单
+                yield return LoadManifestAndConfig(RemoteVersion);
+
+                // 清单重载失败则回到重试循环（可能网络波动导致 hash 文件下载不完整）
+                if (!_lastManifestLoadSuccess)
                 {
-                    // 首次启动无本地资源，必须下载
-                    yield return DownloadAndApplyUpdate();
+                    Debug.LogError("[PatchManager] Manifest reload failed after download, retrying...");
+                    EventDispatcher.PostEvent(MessageEvent.OnPatchDownloadFailed, this,
+                        "清单加载失败，请重试", _retryCount);
+                    continue;
                 }
-                else
+
+                ResourceManager.Instance.SetPackage(_package);
+
+                // 等待用户"点击进入游戏"
+                Debug.Log("[PatchManager] Download complete, waiting for user to enter game...");
+                EventDispatcher.PostEvent(MessageEvent.OnPatchDownloadComplete, this);
+                yield return WaitForUserReadyToEnter();
+                yield break;
+            }
+            else
+            {
+                // 下载失败，等待用户选择重试或跳过
+                Debug.Log("[PatchManager] Download failed, waiting for retry or skip...");
+                yield return WaitForRetryOrSkip();
+                if (UserSkippedUpdate)
                 {
                     NeedUpdate = false;
+                    yield break;
                 }
-                break;
-
-            case EUpdateStrategy.Force:
-                Debug.Log("[PatchManager] Force mode: downloading updates...");
-                yield return DownloadAndApplyUpdate();
-                break;
-
-            case EUpdateStrategy.Optional:
-                Debug.Log("[PatchManager] Optional mode: waiting for user decision...");
-                yield return WaitForUserDecision();
-                break;
-
-            default:
-                yield return DownloadAndApplyUpdate();
-                break;
+                // 否则：继续循环（重试）
+            }
         }
-
-        // ── Step 4: 如果下载了新版本，重新加载清单 ──
-        if (NeedUpdate && !string.IsNullOrEmpty(RemoteVersion))
-        {
-            yield return LoadManifestAndConfig(RemoteVersion);
-            ResourceManager.Instance.SetPackage(_package);
-        }
-
-        Debug.Log("[PatchManager] Check and update complete.");
     }
 
     #endregion
@@ -390,12 +481,10 @@ public class PatchManager
 
         Debug.LogError("[PatchManager] Version request failed after all retries.");
 
-        // 失败降级：尝试使用本地版本
-        RemoteVersion = GetLocalVersion(_packageName);
-        if (string.IsNullOrEmpty(RemoteVersion))
-        {
-            Debug.LogError("[PatchManager] No local version available. First launch requires network.");
-        }
+        // 服务器不可达时 RemoteVersion 保持为空，让调用方走"服务器不可达"分支
+        // 不再用本地版本兜底——Phase 1 已将内置版本存入 PlayerPrefs，
+        // 兜底会掩盖"服务器连不上"的事实，误导用户以为检查成功
+        RemoteVersion = null;
     }
 
     /// <summary>
@@ -524,24 +613,27 @@ public class PatchManager
 
     private IEnumerator LoadManifestAndConfig(string version)
     {
+        _lastManifestLoadSuccess = false;
+
         if (string.IsNullOrEmpty(version))
         {
             Debug.LogError("[PatchManager] Cannot load manifest with empty version.");
             yield break;
         }
 
-        var options = new LoadPackageManifestOptions(version, 60);
+        // 超时 10 秒：内置清单本地读取极快，远端清单文件很小，10 秒足够
+        var options = new LoadPackageManifestOptions(version, 10);
         var manifestOp = _package.LoadPackageManifestAsync(options);
         yield return manifestOp;
 
         if (manifestOp.Status != EOperationStatus.Succeeded)
         {
             Debug.LogError($"[PatchManager] Manifest load failed for version {version}: {manifestOp.Error}");
+            yield break;
         }
-        else
-        {
-            Debug.Log($"[PatchManager] Manifest loaded: version={version}");
-        }
+
+        _lastManifestLoadSuccess = true;
+        Debug.Log($"[PatchManager] Manifest loaded: version={version}");
 
         // 尝试从已加载的资源中读取 RemoteConfig
         TryLoadRemoteConfigFromPackage();
@@ -595,10 +687,12 @@ public class PatchManager
 
     #region Download
 
-    private IEnumerator DownloadAndApplyUpdate()
+    private IEnumerator DoDownload()
     {
-        // 加载远端清单
-        var manifestOptions = new LoadPackageManifestOptions(RemoteVersion, 60);
+        _downloadSuccess = false;
+
+        // 加载远端清单（重试时重新拉取，确保下载器拿到最新缓存状态）
+        var manifestOptions = new LoadPackageManifestOptions(RemoteVersion, 10);
         var manifestOp = _package.LoadPackageManifestAsync(manifestOptions);
         yield return manifestOp;
 
@@ -609,13 +703,13 @@ public class PatchManager
             yield break;
         }
 
-        // 创建下载器
+        // 创建下载器（YooAsset 自动跳过已缓存的文件，天然支持断点续传）
         var downloader = _package.CreateResourceDownloader(new ResourceDownloaderOptions(10, 3));
         if (downloader.TotalDownloadCount == 0)
         {
-            Debug.Log("[PatchManager] No files need downloading (manifest was already cached).");
+            Debug.Log("[PatchManager] No files need downloading (all cached).");
             SaveLocalVersion(_packageName, RemoteVersion);
-            EventDispatcher.PostEvent(MessageEvent.OnPatchDownloadComplete, this);
+            _downloadSuccess = true;
             yield break;
         }
 
@@ -631,9 +725,17 @@ public class PatchManager
         downloader.DownloadProgressChanged += OnDownloadProgress;
         downloader.DownloadCompleted += OnDownloadCompleted;
 
-        // 开始下载
-        downloader.StartDownload();
-        yield return downloader;
+        // 开始下载（try-finally 确保异常时也能清理回调，避免重试时重复注册）
+        try
+        {
+            downloader.StartDownload();
+            yield return downloader;
+        }
+        finally
+        {
+            downloader.DownloadProgressChanged -= OnDownloadProgress;
+            downloader.DownloadCompleted -= OnDownloadCompleted;
+        }
     }
 
     private void OnDownloadProgress(DownloadProgressChangedEventArgs args)
@@ -649,11 +751,12 @@ public class PatchManager
         {
             Debug.Log($"[PatchManager] Download completed.");
             SaveLocalVersion(_packageName, RemoteVersion);
-            EventDispatcher.PostEvent(MessageEvent.OnPatchDownloadComplete, this);
+            _downloadSuccess = true;
         }
         else
         {
             Debug.LogError($"[PatchManager] Download failed: {args.Error}");
+            _downloadSuccess = false;
             EventDispatcher.PostEvent(MessageEvent.OnPatchDownloadFailed, this, args.Error, _retryCount);
         }
     }
@@ -661,51 +764,202 @@ public class PatchManager
     #endregion
 
     /// <summary>
-    /// 等待用户点击跳过（服务器不可达时）
+    /// 等待用户点击跳过（服务器不可达时）。
+    /// 在等待期间持续重试连接热更服务器，直到连接成功或用户点击跳过。
     /// </summary>
     private IEnumerator WaitForUserSkip()
     {
         UserSkippedUpdate = false;
-        float waitTime = 0f;
-        const float maxWaitTime = 120f;
+        const float retryInterval = 0.5f; // 每0.5秒重试一次连接
+        float timeSinceLastRetry = 0f;
 
-        while (!UserSkippedUpdate && waitTime < maxWaitTime)
+        while (!UserSkippedUpdate)
         {
-            waitTime += Time.deltaTime;
+            timeSinceLastRetry += Time.deltaTime;
+
+            if (timeSinceLastRetry >= retryInterval)
+            {
+                timeSinceLastRetry = 0f;
+
+                // 单次版本请求，不通过 RequestRemoteVersion（它有内部 3 次重试，会阻塞太久）
+                var versionOp = _package.RequestPackageVersionAsync();
+                yield return versionOp;
+
+                // 网络等待期间用户可能已点跳过，立刻检查
+                if (UserSkippedUpdate)
+                    yield break;
+
+                if (versionOp.Status == EOperationStatus.Succeeded)
+                {
+                    RemoteVersion = versionOp.PackageVersion;
+                    Debug.Log("[PatchManager] Server became reachable during wait.");
+                    yield break;
+                }
+            }
             yield return null;
-        }
-
-        if (!UserSkippedUpdate)
-        {
-            Debug.Log("[PatchManager] User skip timeout, continuing with local resources.");
         }
     }
 
     #region User Decision (Optional Strategy)
 
-    private IEnumerator WaitForUserDecision()
+    /// <summary>
+    /// 预计算待下载的文件数和大小（不实际下载）。
+    /// 有更新时先调用此方法，再通过 OnPatchVersionGet 事件将信息传给 UI。
+    /// </summary>
+    private IEnumerator PreComputeDownloadSize()
     {
-        // 等待用户通过 UI 设置 UserAgreedUpdate
-        UserAgreedUpdate = false;
+        TotalDownloadCount = 0;
+        TotalDownloadSize = 0;
+
+        var manifestOptions = new LoadPackageManifestOptions(RemoteVersion, 10);
+        var manifestOp = _package.LoadPackageManifestAsync(manifestOptions);
+        yield return manifestOp;
+
+        if (manifestOp.Status == EOperationStatus.Succeeded)
+        {
+            var downloader = _package.CreateResourceDownloader(new ResourceDownloaderOptions(10, 3));
+            TotalDownloadCount = downloader.TotalDownloadCount;
+            TotalDownloadSize = downloader.TotalDownloadBytes;
+            Debug.Log($"[PatchManager] Pre-computed download size: {TotalDownloadCount} files, {FormatSize(TotalDownloadSize)}");
+        }
+    }
+
+    /// <summary>
+    /// 等待用户点击"进入游戏"（下载完成后调用）
+    /// </summary>
+    private IEnumerator WaitForUserReadyToEnter()
+    {
+        UserReadyToEnter = false;
+        while (!UserReadyToEnter)
+        {
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// 等待用户选择重试或跳过（下载失败后调用）
+    /// </summary>
+    private IEnumerator WaitForRetryOrSkip()
+    {
+        UserRequestedRetry = false;
+        UserSkippedUpdate = false;
 
         float waitTime = 0f;
-        const float maxWaitTime = 120f; // 最多等 2 分钟
+        const float maxWaitTime = 120f;
 
-        while (!UserAgreedUpdate && waitTime < maxWaitTime)
+        while (!UserRequestedRetry && !UserSkippedUpdate && waitTime < maxWaitTime)
         {
             waitTime += Time.deltaTime;
             yield return null;
         }
 
-        if (UserAgreedUpdate)
+        if (!UserRequestedRetry && !UserSkippedUpdate)
         {
-            Debug.Log("[PatchManager] User agreed to update, starting download...");
-            yield return DownloadAndApplyUpdate();
+            Debug.Log("[PatchManager] Retry/skip timeout, treating as skip.");
+            UserSkippedUpdate = true;
+        }
+    }
+
+    #endregion
+
+    #region Verification & Repair
+
+    /// <summary>
+    /// 校验本地资源文件完整性，自动修复损坏或缺失的文件。
+    /// 仅当版本号一致时调用——版本一致不代表文件完好（可能被误删或磁盘损坏）。
+    /// </summary>
+    private IEnumerator VerifyAndRepairResources()
+    {
+        // 通知 UI 开始校验
+        EventDispatcher.PostEvent(MessageEvent.OnPatchVerifyStart, this);
+
+        // 确保清单已加载（对比需要基于当前版本的远端清单）
+        yield return LoadManifestAndConfig(RemoteVersion);
+        if (!_lastManifestLoadSuccess)
+        {
+            Debug.LogError("[PatchManager] Cannot load manifest for verification, skipping.");
+            yield break;
+        }
+
+        // 创建下载器：对比本地文件与远端清单的 hash
+        // 若无远端访问，downloader 会返回 0 个文件，下方判断会自然跳过
+        var downloader = _package.CreateResourceDownloader(new ResourceDownloaderOptions(10, 3));
+
+        if (downloader.TotalDownloadCount == 0)
+        {
+            Debug.Log("[PatchManager] All resources verified intact — no repair needed.");
+            yield break;
+        }
+
+        // 发现损坏/缺失文件，自动修复
+        TotalDownloadCount = downloader.TotalDownloadCount;
+        TotalDownloadSize = downloader.TotalDownloadBytes;
+        Debug.Log($"[PatchManager] Found {TotalDownloadCount} damaged/missing files ({FormatSize(TotalDownloadSize)}), auto-repairing...");
+
+        EventDispatcher.PostEvent(MessageEvent.OnPatchDownloadStart, this, TotalDownloadCount, TotalDownloadSize);
+
+        // 使用局部方法，避免触发 OnPatchDownloadFailed（修复失败直接继续进游戏，不弹重试 UI）
+        bool repairOk = false;
+
+        void OnRepairCompleted(DownloadCompletedEventArgs args)
+        {
+            if (args.Succeeded)
+            {
+                SaveLocalVersion(_packageName, RemoteVersion);
+                repairOk = true;
+            }
+            else
+            {
+                Debug.LogWarning($"[PatchManager] Repair download failed: {args.Error}");
+            }
+        }
+
+        downloader.DownloadProgressChanged += OnDownloadProgress;
+        downloader.DownloadCompleted += OnRepairCompleted;
+        try
+        {
+            downloader.StartDownload();
+            yield return downloader;
+        }
+        finally
+        {
+            downloader.DownloadProgressChanged -= OnDownloadProgress;
+            downloader.DownloadCompleted -= OnRepairCompleted;
+        }
+
+        if (repairOk)
+        {
+            yield return LoadManifestAndConfig(RemoteVersion);
+            if (_lastManifestLoadSuccess)
+            {
+                ResourceManager.Instance.SetPackage(_package);
+            }
+            EventDispatcher.PostEvent(MessageEvent.OnPatchDownloadComplete, this);
+            Debug.Log("[PatchManager] Resource repair completed.");
         }
         else
         {
-            Debug.Log("[PatchManager] User declined or timeout, using local resources.");
-            NeedUpdate = false;
+            Debug.LogWarning("[PatchManager] Resource repair failed, continuing with local resources.");
+        }
+    }
+
+    /// <summary>
+    /// 清理沙盒缓存中不被当前资源清单引用的残留文件（旧版本残留）。
+    /// </summary>
+    private IEnumerator ClearUnusedCacheAsync()
+    {
+        Debug.Log("[PatchManager] Cleaning unused cache files...");
+        var options = new ClearCacheOptions(ClearCacheMethods.ClearUnusedBundleFiles);
+        var clearOp = _package.ClearCacheAsync(options);
+        yield return clearOp;
+
+        if (clearOp.Status == EOperationStatus.Succeeded)
+        {
+            Debug.Log("[PatchManager] Unused cache files cleaned.");
+        }
+        else
+        {
+            Debug.LogWarning($"[PatchManager] Cache cleanup failed: {clearOp.Error}");
         }
     }
 
@@ -747,7 +1001,7 @@ public class ConfigurableRemoteService : IRemoteService
 
     public ConfigurableRemoteService(string baseUrl)
     {
-        _baseUrl = (baseUrl ?? "http://127.0.0.1/").TrimEnd('/');
+        _baseUrl = (baseUrl ?? "http://127.0.0.1/").Trim().TrimEnd('/');
     }
 
     /// <summary>
@@ -757,12 +1011,15 @@ public class ConfigurableRemoteService : IRemoteService
     {
         if (!string.IsNullOrEmpty(url))
         {
-            _baseUrl = url.TrimEnd('/');
+            _baseUrl = url.Trim().TrimEnd('/');
         }
     }
 
     public IReadOnlyList<string> GetRemoteUrls(string fileName)
     {
-        return new System.Collections.Generic.List<string> { $"{_baseUrl}/{fileName}" };
+        // YooAsset 内部对版本文件使用了 "{PackageName}/{PackageName}.version" 路径，
+        // 而对 hash/manifest/bundle 使用扁平路径。统一取文件名，让所有资源都能在服务器根目录找到。
+        string flatName = System.IO.Path.GetFileName(fileName);
+        return new System.Collections.Generic.List<string> { $"{_baseUrl}/{flatName}" };
     }
 }

@@ -194,6 +194,8 @@ public static class MessageEvent
     public static readonly string OnPatchCheckStart = "OnPatchCheckStart";
     /// <summary>获取到版本号 (args: string remoteVersion, string localVersion)</summary>
     public static readonly string OnPatchVersionGet = "OnPatchVersionGet";
+    /// <summary>开始校验资源完整性（版本一致后触发）</summary>
+    public static readonly string OnPatchVerifyStart = "OnPatchVerifyStart";
     /// <summary>开始下载更新 (args: int totalCount, long totalSizeBytes)</summary>
     public static readonly string OnPatchDownloadStart = "OnPatchDownloadStart";
     /// <summary>下载进度更新 (args: int currentCount, int totalCount, long currentSizeBytes, long totalSizeBytes)</summary>

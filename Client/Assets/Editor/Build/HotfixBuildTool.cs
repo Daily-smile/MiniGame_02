@@ -270,7 +270,7 @@ public static class HotfixBuildTool
 
         EditorPrefs.SetString("HotfixDeploy_LastPath", deployPath);
 
-        string targetDir = Path.Combine(deployPath, "GameAssets", "yoo", PackageName);
+        string targetDir = deployPath; // 所有文件统一部署到服务器根目录
         string sourceDir = Path.Combine(packageRoot, latestVersion);
 
         if (!EditorUtility.DisplayDialog(
@@ -283,19 +283,17 @@ public static class HotfixBuildTool
 
         try
         {
-            if (Directory.Exists(targetDir))
-            {
-                Directory.Delete(targetDir, true);
-            }
-            Directory.CreateDirectory(targetDir);
+            // 清理旧的热更资源文件
+            CleanOldHotfixFiles(deployPath, latestVersion);
 
+            // 所有文件统一部署到服务器根目录
             CopyDirectory(sourceDir, targetDir);
 
-            Debug.Log($"[HotfixBuild] Deployed version {latestVersion} to HTTP server: {targetDir}");
+            Debug.Log($"[HotfixBuild] Deployed version {latestVersion} to HTTP server root: {targetDir}");
             EditorUtility.DisplayDialog("Deploy Complete",
-                $"Version {latestVersion} deployed.\n\nHTTP server directory: {targetDir}\n\n"
-                + "Make sure your HTTP server serves this directory at the root.\n"
-                + "Example URL: http://localhost/GameAssets/yoo/DefaultPackage/{version}.version",
+                $"Version {latestVersion} deployed.\n\n"
+                + $"All files at root: {targetDir}\n\n"
+                + "Example URL: http://localhost/DefaultPackage.version",
                 "OK");
 
             EditorUtility.RevealInFinder(targetDir);
@@ -327,6 +325,25 @@ public static class HotfixBuildTool
             }
         }
         return latestVersion;
+    }
+
+    /// <summary>
+    /// 清理部署目录中的旧热更文件（避免 hash/manifest 版本冲突）。
+    /// 仅删除 YooAsset 相关文件，不影响用户放在服务器目录中的其他文件。
+    /// </summary>
+    private static void CleanOldHotfixFiles(string deployDir, string newVersion)
+    {
+        foreach (string file in Directory.GetFiles(deployDir))
+        {
+            string name = Path.GetFileName(file);
+            // 删除旧版本的 hash、bytes、version、bundle 文件（避免多个版本共存导致混乱）
+            if ((name.StartsWith(PackageName) && (name.EndsWith(".hash") || name.EndsWith(".bytes") || name.EndsWith(".version")))
+                || name.EndsWith(".bundle"))
+            {
+                File.Delete(file);
+                Debug.Log($"[HotfixBuild] Cleaned old file: {name}");
+            }
+        }
     }
 
     private static void BuildPlayer(BuildTarget buildTarget, string version)

@@ -38,8 +38,8 @@ public class RemoteConfig : ScriptableObject
     public string GetVersionServerURL()
     {
         if (!string.IsNullOrEmpty(VersionServerURL))
-            return VersionServerURL.TrimEnd('/');
-        return UpdateServerURL.TrimEnd('/');
+            return VersionServerURL.Trim().TrimEnd('/');
+        return UpdateServerURL.Trim().TrimEnd('/');
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public class RemoteConfig : ScriptableObject
     /// </summary>
     public string GetUpdateServerURL()
     {
-        return UpdateServerURL.TrimEnd('/');
+        return UpdateServerURL.Trim().TrimEnd('/');
     }
 }
 
