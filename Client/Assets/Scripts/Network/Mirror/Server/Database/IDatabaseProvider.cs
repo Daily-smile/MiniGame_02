@@ -1,3 +1,7 @@
+using LF.Framework;
+
+namespace LF.Network
+{
 /// <summary>
 /// 数据库抽象接口
 /// </summary>
@@ -17,4 +21,5 @@ public interface IDatabaseProvider
 
     /// <summary>获取 SessionId</summary>
     string GetSession(string username);
+}
 }

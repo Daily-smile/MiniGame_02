@@ -1,5 +1,8 @@
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 数据库静态入口 (替代原 DBManager / DatabaseManager)
 ///
@@ -33,4 +36,5 @@ public static class DB
         provider.Initialize();
         Debug.Log($"[DB] 数据库已切换为: {provider.GetType().Name}");
     }
+}
 }

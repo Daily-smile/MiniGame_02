@@ -36,8 +36,16 @@ MonoBehaviour:
         AddressRuleName: AddressByFolderAndFileName
         PackRuleName: PackGroup
         FilterRuleName: CollectAll
-        AssetTags: 
-        UserData: 
+        AssetTags:
+        UserData:
+      - CollectPath: Assets/GameAssets/HotUpdateDlls
+        CollectorGUID:
+        CollectorType: 0
+        AddressRuleName: AddressByFolderAndFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags:
+        UserData:
     - GroupName: UI
       GroupDesc: "\u6240\u6709UI\u7684\u8D44\u6E90"
       AssetTags: 

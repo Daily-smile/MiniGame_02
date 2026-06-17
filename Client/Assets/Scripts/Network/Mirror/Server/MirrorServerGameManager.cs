@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 服务端游戏管理器 (替代 GameController + 部分 Server.cs 游戏相关逻辑)
 ///
@@ -425,4 +428,5 @@ public class MirrorServerGameManager : NetworkBehaviour
             enterGameReady.Remove(username);
         }
     }
+}
 }

@@ -1,6 +1,9 @@
 using Mirror;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// Mirror 网络玩家组件 —— 纯 SyncVar 数据层 + [Command]/[ClientRpc] 定义。
 ///
@@ -24,8 +27,6 @@ using UnityEngine;
 [RequireComponent(typeof(NetworkIdentity))]
 [RequireComponent(typeof(NetworkTransformUnreliable))]
 [RequireComponent(typeof(NetworkAnimator))]
-[RequireComponent(typeof(LocalPlayerDriver))]
-[RequireComponent(typeof(RemotePlayerView))]
 public class MirrorPlayer : NetworkBehaviour
 {
     [Header("Sync Vars - 替代原先通过 PlayerInfoPack UDP 同步的字段")]
@@ -60,11 +61,11 @@ public class MirrorPlayer : NetworkBehaviour
     {
         base.OnStartAuthority();
 
-        var localDriver = GetComponent<LocalPlayerDriver>();
+        var localDriver = GetComponent<ILocalPlayerDriver>();
         if (localDriver != null)
             localDriver.Initialize();
         else
-            Debug.LogError($"[Mirror] LocalPlayerDriver 组件缺失于 {gameObject.name}!");
+            Debug.LogError($"[Mirror] ILocalPlayerDriver 组件缺失于 {gameObject.name}!");
 
         EventDispatcher.PostEvent(MessageEvent.OnMirrorPlayerSpawned, this, playerName, this);
         Debug.Log($"[Mirror] 本地玩家获取权限: {playerName}");
@@ -74,7 +75,7 @@ public class MirrorPlayer : NetworkBehaviour
     {
         base.OnStopAuthority();
 
-        var localDriver = GetComponent<LocalPlayerDriver>();
+        var localDriver = GetComponent<ILocalPlayerDriver>();
         if (localDriver != null)
             localDriver.Cleanup();
 
@@ -85,23 +86,19 @@ public class MirrorPlayer : NetworkBehaviour
     {
         base.OnStartClient();
 
-        bool isLocalPlayerByUserName = playerName == GameManager.Instance.userName;
+        Debug.Log($"[MirrorPlayer] OnStartClient: playerName={playerName}, gameObject={gameObject.name}, "
+                + $"authority={authority}");
 
-        Debug.Log($"[MirrorPlayer] OnStartClient: playerName={playerName}, gameObject={gameObject.name}, " +
-                  $"authority={authority}, isLocalPlayerByUserName={isLocalPlayerByUserName}");
-
-        if (!isLocalPlayerByUserName)
-        {
-            var remoteView = GetComponent<RemotePlayerView>();
-            if (remoteView != null)
-                remoteView.Initialize();
-            else
-                Debug.LogError($"[Mirror] RemotePlayerView 组件缺失于 {gameObject.name}!");
-        }
+        // 尝试驱动组件初始化：LocalPlayerDriver 和 RemotePlayerView 各自内部判断是否应该激活
+        var remoteView = GetComponent<IRemotePlayerView>();
+        if (remoteView != null)
+            remoteView.Initialize();
+        else
+            Debug.LogError($"[Mirror] IRemotePlayerView 组件缺失于 {gameObject.name}!");
 
         // 始终触发，GameReferee 需要此事件注册本地/远程玩家
         EventDispatcher.PostEvent(MessageEvent.OnMirrorPlayerSpawned, this, playerName, this);
-        Debug.Log($"[Mirror] 玩家已初始化: {playerName} ({(isLocalPlayerByUserName ? "本地" : "远程")})");
+        Debug.Log($"[Mirror] 玩家已初始化: {playerName} ({(isLocalPlayer ? "本地" : "远程")})");
     }
 
     // ==================== SyncVar Hooks ====================
@@ -212,7 +209,7 @@ public class MirrorPlayer : NetworkBehaviour
         EventDispatcher.PostEvent(MessageEvent.PlayerOnHit, this, targetName, dead);
 
         // 更新本地 HP UI
-        if (targetName.Equals(GameManager.Instance.userName))
+        if (targetName.Equals(playerName))
         {
             EventDispatcher.PostEvent(MessageEvent.UpdateNetPlayer, this, this);
         }
@@ -231,10 +228,10 @@ public class MirrorPlayer : NetworkBehaviour
     [ClientRpc(includeOwner = false)]
     private void RpcShowHitEffect(bool isLethal)
     {
-        PlayerAnimator animtor = GetComponentInChildren<PlayerAnimator>();
-        if (animtor != null)
+        IHitEffectHandler handler = GetComponentInChildren<IHitEffectHandler>();
+        if (handler != null)
         {
-            animtor.OnHit(isLethal, () => { });
+            handler.OnHit(isLethal, () => { });
         }
     }
 
@@ -252,7 +249,7 @@ public class MirrorPlayer : NetworkBehaviour
         }
         fire.transform.parent = null;
         fire.transform.position = pos;
-        fire.GetComponent<Fireball>().Initialized(facingRight);
+        fire.GetComponent<IProjectile>()?.Initialized(facingRight);
     }
 
     /// <summary>
@@ -287,4 +284,5 @@ public class MirrorPlayer : NetworkBehaviour
         isDead = false;
         isFlipX = false;
     }
+}
 }

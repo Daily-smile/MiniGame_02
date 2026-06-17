@@ -1,7 +1,10 @@
 using System.Linq;
 using Mirror;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// Headless 服务端启动器 (替代原 Program.cs / Server.cs 的入口逻辑)
 ///
@@ -71,4 +74,5 @@ public class HeadlessBootstrap : MonoBehaviour
             Debug.Log($"[Headless] BatchMode 启动 @ {System.DateTime.Now}");
         }
     }
+}
 }

@@ -1,6 +1,9 @@
 using Mirror;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 测试用网络调试 UI (开发阶段使用，正式发布前删除)
 ///
@@ -100,4 +103,5 @@ public class DebugNetworkUI : MonoBehaviour
         GUILayout.Label("Press F1 to toggle this UI");
         GUILayout.EndArea();
     }
+}
 }

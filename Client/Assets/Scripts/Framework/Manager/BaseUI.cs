@@ -1,0 +1,40 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace LF.Framework
+{
+public abstract class BaseUI : MonoBehaviour
+{
+    public virtual void Init()
+    {
+        
+    }
+
+    protected virtual void Awake()
+    {
+        
+    }
+    protected virtual void Start()
+    {
+        
+    }
+    protected virtual void OnEnable()
+    {
+        
+    }
+    protected virtual void OnDisable()
+    {
+        
+    }
+    protected virtual void OnDestroy()
+    {
+        
+    }
+    protected virtual void Update()
+    {
+
+    }
+}
+}

@@ -1,5 +1,8 @@
 using Mirror;
+using LF.Framework;
 
+namespace LF.Network
+{
 // ==================== 房间管理消息 (替代原 ActionCode.Room 系列) ====================
 
 /// <summary>
@@ -129,4 +132,5 @@ public struct MatchRequest : NetworkMessage
 public struct QuitMatchMessage : NetworkMessage
 {
     public string username;
+}
 }

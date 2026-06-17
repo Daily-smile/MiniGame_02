@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 服务端认证管理器 (替代 UserController + 部分 Client.cs 的 Login/Logon/Reconnect 逻辑)
 ///
@@ -326,4 +329,5 @@ public class MirrorAuthManager : NetworkBehaviour
             activeLogins.Remove(username);
         ClearPlayerId(conn.connectionId);
     }
+}
 }

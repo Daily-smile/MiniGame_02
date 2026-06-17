@@ -5,7 +5,10 @@ using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 文件持久化数据库 (JSON)
 /// 替代内存数据库，服务端重启后数据不丢失
@@ -146,4 +149,5 @@ public class FileDatabaseProvider : IDatabaseProvider
             return Convert.ToBase64String(hashBytes);
         }
     }
+}
 }

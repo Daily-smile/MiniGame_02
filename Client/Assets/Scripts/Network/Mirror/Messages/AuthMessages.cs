@@ -1,5 +1,8 @@
 using Mirror;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 注册请求 (替代原 ActionCode.Logon)
 /// </summary>
@@ -63,4 +66,5 @@ public struct ReconnectMessage : NetworkMessage
 public struct ReturnLoginMessage : NetworkMessage
 {
     public string username;
+}
 }

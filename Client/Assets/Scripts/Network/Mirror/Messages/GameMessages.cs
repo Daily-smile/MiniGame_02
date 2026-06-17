@@ -1,6 +1,9 @@
 using Mirror;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 // ==================== 游戏同步消息 (替代原 ActionCode.UpdatePlayer / GamePack 等) ====================
 
 /// <summary>
@@ -91,4 +94,5 @@ public struct PropPickupMessage : NetworkMessage
 public struct QuitMatchResponse : NetworkMessage
 {
     public bool success;
+}
 }

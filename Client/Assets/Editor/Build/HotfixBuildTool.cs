@@ -390,4 +390,164 @@ public static class HotfixBuildTool
     }
 
     #endregion
+
+    #region Menu Items — HybridCLR 热更 DLL
+
+    private const string HotUpdateDllSourceDir = "HybridCLRData/HotUpdateDlls/{0}";
+    private const string AOTMetadataSourceDir = "HybridCLRData/AssembliesPostIl2CppStrip/{0}";
+    private const string YooAssetDllCollectDir = "Assets/GameAssets/HotUpdateDlls";
+    private const string BuiltinAOTMetadataDir = "Assets/StreamingAssets/HotUpdateDlls";
+
+    /// <summary>
+    /// 将 HybridCLR 编译的热更 DLL 拷贝到 YooAsset 收集目录。
+    /// 执行前请先运行 HybridCLR > CompileDll > ActiveBuildTarget。
+    /// </summary>
+    [MenuItem("YooAsset/Deploy HotUpdate DLLs To Collect Folder", false, 230)]
+    public static void DeployHotUpdateDlls()
+    {
+        var target = EditorUserBuildSettings.activeBuildTarget;
+        string sourceDir = Path.Combine(
+            Application.dataPath.Replace("/Assets", ""),
+            string.Format(HotUpdateDllSourceDir, target));
+
+        if (!Directory.Exists(sourceDir))
+        {
+            EditorUtility.DisplayDialog("Error",
+                $"Hot update DLLs not found:\n{sourceDir}\n\n"
+                + "Please run HybridCLR > CompileDll > ActiveBuildTarget first.", "OK");
+            return;
+        }
+
+        // 确保 YooAsset 收集目录存在
+        if (!Directory.Exists(YooAssetDllCollectDir))
+            Directory.CreateDirectory(YooAssetDllCollectDir);
+
+        // 拷贝 DLL 文件为 .bytes (Unity 会将 .dll 识别为脚本，必须改名)
+        foreach (string dllPath in Directory.GetFiles(sourceDir, "*.dll"))
+        {
+            string dllName = Path.GetFileName(dllPath);
+            string destPath = Path.Combine(YooAssetDllCollectDir, dllName + ".bytes");
+            File.Copy(dllPath, destPath, true);
+            Debug.Log($"[HotfixBuild] Copied: {dllName} → {destPath}");
+        }
+
+        AssetDatabase.Refresh();
+        EditorUtility.DisplayDialog("Deploy Complete",
+            $"Hot update DLLs deployed to:\n{YooAssetDllCollectDir}\n\n"
+            + "Next: YooAsset > Build Hotfix Resources to package them.", "OK");
+    }
+
+    /// <summary>
+    /// AOT 补充元数据：仅拷贝 HybridCLRPreloader.AOTMetaAssemblyNames 中列出的程序集。
+    /// </summary>
+    private static readonly string[] AOTMetaFilter =
+    {
+        "LFFramework", "Network", "Mirror", "Mirror.Components",
+        "Mirror.Transports", "Mirror.Authenticators", "kcp2k", "YooAsset",
+        "HybridCLR.Runtime", "DOTween",
+    };
+
+    /// <summary>
+    /// 将 AOT 补充元数据 DLL 拷贝到 StreamingAssets（随包发布）。
+    /// 只拷贝实际需要的程序集，避免包体积膨胀。
+    /// 执行前请先运行 HybridCLR > Generate > All。
+    /// </summary>
+    [MenuItem("YooAsset/Deploy AOT Metadata To StreamingAssets", false, 231)]
+    public static void DeployAOTMetadata()
+    {
+        var target = EditorUserBuildSettings.activeBuildTarget;
+        string sourceDir = Path.Combine(
+            Application.dataPath.Replace("/Assets", ""),
+            string.Format(AOTMetadataSourceDir, target));
+
+        if (!Directory.Exists(sourceDir))
+        {
+            EditorUtility.DisplayDialog("Error",
+                $"AOT metadata not found:\n{sourceDir}\n\n"
+                + "Please run HybridCLR > Generate > All first.", "OK");
+            return;
+        }
+
+        if (!Directory.Exists(BuiltinAOTMetadataDir))
+            Directory.CreateDirectory(BuiltinAOTMetadataDir);
+
+        int copied = 0;
+        foreach (string dllName in AOTMetaFilter)
+        {
+            string sourcePath = Path.Combine(sourceDir, dllName + ".dll");
+            if (!File.Exists(sourcePath))
+            {
+                Debug.LogWarning($"[HotfixBuild] AOT metadata not found, skipping: {dllName}.dll");
+                continue;
+            }
+            string destPath = Path.Combine(BuiltinAOTMetadataDir, dllName + ".dll.bytes");
+            File.Copy(sourcePath, destPath, true);
+            Debug.Log($"[HotfixBuild] AOT metadata copied: {dllName}.dll → {destPath}");
+            copied++;
+        }
+
+        AssetDatabase.Refresh();
+        EditorUtility.DisplayDialog("Deploy Complete",
+            $"{copied} AOT metadata files deployed to:\n{BuiltinAOTMetadataDir}\n\n"
+            + "These files will be included in the app build via StreamingAssets.", "OK");
+    }
+
+    /// <summary>
+    /// 完整热更构建流程：编译 DLL → 拷贝到收集目录 → 构建资源包。
+    /// </summary>
+    [MenuItem("YooAsset/Full HotUpdate Build (DLLs + Resources)", false, 199)]
+    public static void FullHotUpdateBuild()
+    {
+        var target = EditorUserBuildSettings.activeBuildTarget;
+        string version = GenerateBuildVersion();
+
+        if (!EditorUtility.DisplayDialog(
+            "Full HotUpdate Build",
+            $"This will:\n"
+            + "1. Compile hot update DLLs (HybridCLR)\n"
+            + "2. Copy DLLs to YooAsset collect folder\n"
+            + "3. Build YooAsset resources\n\n"
+            + $"Target: {target}\nVersion: {version}\n\n"
+            + "Make sure you have run HybridCLR > Generate > All first!",
+            "Build", "Cancel"))
+        {
+            return;
+        }
+
+        try
+        {
+            // Step 1: 编译热更 DLL
+            EditorUtility.DisplayProgressBar("Full HotUpdate Build",
+                "Step 1/4: Compiling hot update DLLs...", 0.1f);
+            HybridCLR.Editor.Commands.CompileDllCommand.CompileDll(target);
+            Debug.Log("[HotfixBuild] Step 1/4: DLL compile done.");
+
+            // Step 2: 拷贝热更 DLL 到收集目录
+            EditorUtility.DisplayProgressBar("Full HotUpdate Build",
+                "Step 2/4: Deploying DLLs to collect folder...", 0.4f);
+            DeployHotUpdateDlls();
+
+            // Step 3: 拷贝 AOT 元数据到 StreamingAssets
+            EditorUtility.DisplayProgressBar("Full HotUpdate Build",
+                "Step 3/4: Deploying AOT metadata to StreamingAssets...", 0.5f);
+            DeployAOTMetadata();
+
+            // Step 4: 构建 YooAsset 资源包
+            EditorUtility.DisplayProgressBar("Full HotUpdate Build",
+                "Step 4/4: Building YooAsset resources...", 0.6f);
+            ExecuteBuild(target, version);
+        }
+        finally
+        {
+            EditorUtility.ClearProgressBar();
+        }
+
+        Debug.Log($"[HotfixBuild] Full hot update build complete. Version: {version}");
+        EditorUtility.DisplayDialog("Build Complete",
+            $"Full hot update build finished.\n\nVersion: {version}\n\n"
+            + "Next: deploy resources to HTTP server for testing.\n"
+            + "Menu: YooAsset > Deploy To Local HTTP Server", "OK");
+    }
+
+    #endregion
 }

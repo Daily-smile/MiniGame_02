@@ -1,0 +1,29 @@
+{
+    "name": "GameLogic",
+    "rootNamespace": "",
+    "references": [
+        "LFFramework",
+        "Network",
+        "Mirror",
+        "Mirror.Components",
+        "Mirror.Transports",
+        "kcp2k",
+        "YooAsset",
+        "DOTween.Modules",
+        "Unity.TextMeshPro",
+        "Unity.Mathematics",
+        "Unity.2D.Tilemap.Extras",
+        "Unity.VisualScripting.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "DOTween.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

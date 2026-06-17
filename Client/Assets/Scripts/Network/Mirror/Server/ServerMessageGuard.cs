@@ -1,6 +1,9 @@
 using Mirror;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 服务端消息处理安全包装器
 /// 防止单个消息处理异常导致服务端崩溃
@@ -38,4 +41,5 @@ public static class ServerMessageGuard
 public struct ErrorResponse : NetworkMessage
 {
     public string message;
+}
 }

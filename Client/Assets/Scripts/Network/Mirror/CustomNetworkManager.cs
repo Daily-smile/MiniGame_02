@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 自定义网络管理器 (替代 ClientManager + MainPackManager 的连接逻辑)
 ///
@@ -50,6 +53,12 @@ public class CustomNetworkManager : NetworkManager
 
     /// <summary>当前用户名</summary>
     public string CurrentUsername { get; set; }
+
+    /// <summary>当前玩家 ID（登录成功后由服务器分配）</summary>
+    public int CurrentPlayerId { get; set; }
+
+    /// <summary>当前是否有游戏正在进行中（防止重复开始）</summary>
+    public bool IsGameInProgress { get; set; }
 
     // 单例便于跨模块访问
     public static new CustomNetworkManager singleton { get; private set; }
@@ -488,7 +497,7 @@ public class CustomNetworkManager : NetworkManager
         if (msg.success)
         {
             SessionId = msg.sessionId;
-            // 传递 playerId 给 GameManager
+            CurrentPlayerId = msg.playerId;
             EventDispatcher.PostEvent(MessageEvent.OnLoginOK, this, CurrentUsername, msg.sessionId, msg.playerId);
             EventDispatcher.PostEvent(MessageEvent.OnLoginOKBack, this, CurrentUsername, msg.sessionId);
             OnMirrorClientAuthenticated();
@@ -535,10 +544,10 @@ public class CustomNetworkManager : NetworkManager
                     EventDispatcher.PostEvent(MessageEvent.OnKickoutRoomBack, this, msg.room.roomID, msg.room);
                     // 检查是否是自己被踢了：如果自己不在新房间的玩家列表中，清除本地房间数据
                     {
-                        string selfName = GameManager.Instance.userName;
+                        string selfName = CurrentUsername;
                         bool isSelfKicked = true;
                         // 优先用 playerId 判断是否自己被踢（比字符串更可靠）
-                        int selfPlayerId = GameManager.Instance.playerId;
+                        int selfPlayerId = CurrentPlayerId;
                         if (selfPlayerId > 0 && msg.room.playerIds != null)
                         {
                             for (int i = 0; i < msg.room.playerIds.Length; i++)
@@ -599,8 +608,9 @@ public class CustomNetworkManager : NetworkManager
         if (msg.success)
         {
             // 已在游戏场景中收到success,这是服务端"全员就绪"信号,直接触发倒计时
-            if (!GameManager.Instance.GameIsOver && (msg.gameModel == 1 || msg.gameModel == 2))
+            if (!IsGameInProgress && (msg.gameModel == 1 || msg.gameModel == 2))
             {
+                IsGameInProgress = true;
                 EventDispatcher.PostEvent(MessageEvent.StartGameRuning, this, null);
                 return;
             }
@@ -634,6 +644,7 @@ public class CustomNetworkManager : NetworkManager
 
     private void OnGameOver(GameOverMessage msg)
     {
+        IsGameInProgress = false;
         EventDispatcher.PostEvent(MessageEvent.GameOver, this, msg);
     }
 
@@ -754,11 +765,11 @@ public class CustomNetworkManager : NetworkManager
             // 转发到旧的 EventDispatcher (兼容 UI)
             if (newState == ConnectionState.Connected)
             {
-                GameManager.Instance.OnMirrorConnected();
+                EventDispatcher.PostEvent(MessageEvent.ServerConnectChange, this, MessageEventType.ClientOK);
             }
             else if (newState == ConnectionState.Disconnected)
             {
-                GameManager.Instance.OnMirrorDisconnected();
+                EventDispatcher.PostEvent(MessageEvent.ServerConnectChange, this, MessageEventType.ClientFail);
             }
         }
     }
@@ -778,4 +789,5 @@ public class CustomNetworkManager : NetworkManager
     }
 
     #endregion
+}
 }

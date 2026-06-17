@@ -1,0 +1,31 @@
+<linker>
+    <!--
+        HybridCLR 热更保护配置。
+        防止 il2cpp 在构建时裁剪掉热更代码需要的 AOT 类型。
+        此文件会在 HybridCLR Generate 时被自动生成的文件覆盖，
+        这里提供基础保护确保首次构建不出问题。
+    -->
+
+    <!-- 保留所有程序集的完整类型（开发阶段使用，正式发布前应缩小范围） -->
+    <assembly fullname="LFFramework" preserve="all" />
+    <assembly fullname="GameLogic" preserve="all" />
+    <assembly fullname="Network" preserve="all" />
+
+    <!-- 保护 Mirror 网络层（热更代码通过 NetworkBehaviour 等基类交互） -->
+    <assembly fullname="Mirror" preserve="all" />
+    <assembly fullname="Mirror.Components" preserve="all" />
+    <assembly fullname="Mirror.Transports" preserve="all" />
+    <assembly fullname="Mirror.Authenticators" preserve="all" />
+    <assembly fullname="kcp2k" preserve="all" />
+
+    <!-- 保护 YooAsset（热更代码通过 ResourcePackage 等 API 加载资源） -->
+    <assembly fullname="YooAsset" preserve="all" />
+
+    <!-- 保护 HybridCLR Runtime API -->
+    <assembly fullname="HybridCLR.Runtime" preserve="all" />
+
+    <!-- 保护 System.Reflection（HybridCLR 解释器依赖） -->
+    <assembly fullname="System" preserve="all" />
+    <assembly fullname="System.Core" preserve="all" />
+    <assembly fullname="mscorlib" preserve="all" />
+</linker>

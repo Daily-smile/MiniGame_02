@@ -2,7 +2,10 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// Mirror 游戏管理器 (替代部分 GameReferee 的多人生成逻辑)
 ///
@@ -221,4 +224,5 @@ public class MirrorGameManager : NetworkBehaviour
         if (singleton == this)
             singleton = null;
     }
+}
 }

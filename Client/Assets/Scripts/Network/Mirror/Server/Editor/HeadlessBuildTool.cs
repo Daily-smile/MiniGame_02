@@ -3,7 +3,10 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// Headless Server 构建工具 (Editor 菜单)
 ///
@@ -87,5 +90,6 @@ public static class HeadlessBuildTool
     {
         return !Application.isPlaying && !EditorApplication.isCompiling;
     }
+}
 }
 #endif

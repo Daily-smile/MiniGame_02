@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 内存数据库实现 (默认，无需 MySQL)
 /// 服务端重启后数据会丢失，适用于开发测试环境
@@ -52,4 +55,5 @@ public class MemoryDatabaseProvider : IDatabaseProvider
         _userSessions.TryGetValue(username, out string id);
         return id;
     }
+}
 }

@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
+using LF.Framework;
 
+namespace LF.Network
+{
 /// <summary>
 /// 服务端房间管理器 (替代 RoomController + Server.cs 中的房间操作方法 + Room.cs)
 ///
@@ -548,4 +551,5 @@ public class MirrorRoomManager : NetworkBehaviour
             connUsernameDict.Remove(connID);
         }
     }
+}
 }
