@@ -1,20 +1,27 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
 using HybridCLR;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using YooAsset;
 
 namespace LF.Framework
 {
 /// <summary>
-/// HybridCLR 预加载器 —— 在场景加载前完成热更 DLL 的加载。
+/// HybridCLR 预加载器 —— 在 LoadingScene 中完成热更 DLL 的加载，
+/// 然后自动切换到 Game 场景。
+///
+/// 流程：
+///   1. App 启动 → Unity 加载 LoadingScene（Index 0，无 GameLogic 脚本）
+///   2. BeforeSceneLoad 创建 PreloaderRunner，启动协程
+///   3. 协程：初始化 YooAsset → 加载 AOT 元数据 → 加载热更 DLL
+///   4. 全部完成后 → SceneManager.LoadScene("Game")
 ///
 /// 关键原则（来自 HybridCLR 官方文档）：
 ///   1. AOT 补充元数据 DLL 必须随包发布（StreamingAssets），不可远程热更。
 ///   2. 热更 DLL 在 Builtin（首次）或 Sandbox（热更后）中，由 YooAsset 统一管理。
-///   3. DLL 加载必须在任何热更程序集代码执行前完成（BeforeSceneLoad）。
+///   3. DLL 加载必须在任何热更程序集代码执行前完成。
 /// </summary>
 public static class HybridCLRPreloader
 {
@@ -30,6 +37,8 @@ public static class HybridCLRPreloader
         "kcp2k",
         "YooAsset",
         "HybridCLR.Runtime",
+        "DOTween",
+        "DOTween.Modules",
     };
 
     /// <summary>热更程序集列表</summary>
@@ -40,6 +49,9 @@ public static class HybridCLRPreloader
 
     /// <summary>资源地址前缀（匹配 AddressByFolderAndFileName 规则生成的地址格式）</summary>
     private const string DllAssetPrefix = "HotUpdateDlls_";
+
+    /// <summary>预加载完成后要加载的主场景名称</summary>
+    private const string GameSceneName = "Game";
 
     /// <summary>
     /// 预加载是否已完成（供 GameLaunch 检查）
@@ -60,18 +72,46 @@ public static class HybridCLRPreloader
     private static void OnBeforeSceneLoad()
     {
 #if UNITY_EDITOR
-        Debug.Log("[HybridCLRPreloader] Editor mode: skip preloading (hot update DLLs are compiled in Editor).");
+        Debug.Log("[HybridCLRPreloader] Editor mode: skip preloading (DLLs are compiled in Editor).");
         IsLoaded = true;
         return;
 #else
-        // 同步启动协程（BeforeSceneLoad 阶段可用）
-        var coroutine = PreloadAsync();
-        while (coroutine.MoveNext()) { }
+        var go = new GameObject("__HybridCLRPreloader__");
+        GameObject.DontDestroyOnLoad(go);
+        go.AddComponent<PreloaderRunner>().StartPreload();
 #endif
     }
 
     /// <summary>
-    /// 预加载流程：初始化 YooAsset → 加载 AOT 元数据 → 加载热更 DLL。
+    /// 辅助 MonoBehaviour，用于启动协程并在完成后加载 Game 场景。
+    /// </summary>
+    private class PreloaderRunner : MonoBehaviour
+    {
+        public void StartPreload()
+        {
+            StartCoroutine(RunPreload());
+        }
+
+        private IEnumerator RunPreload()
+        {
+            yield return PreloadAsync();
+
+            if (IsLoaded)
+            {
+                Debug.Log("[HybridCLRPreloader] Preload complete, switching to Game scene...");
+                yield return SceneManager.LoadSceneAsync(GameSceneName);
+            }
+            else
+            {
+                Debug.LogError("[HybridCLRPreloader] Preload failed — staying on loading scene.");
+            }
+
+            Destroy(gameObject);
+        }
+    }
+
+    /// <summary>
+    /// 预加载流程：初始化 YooAsset → 加载 AOT 元数据 → 加载热更 DLL → 预热。
     /// </summary>
     private static IEnumerator PreloadAsync()
     {
@@ -87,19 +127,19 @@ public static class HybridCLRPreloader
             yield break;
         }
 
-        // ── Step 2: 加载 AOT 补充元数据（仅从内置/缓存，不访问网络）──
+        // ── Step 2: 加载 AOT 补充元数据 ──
         foreach (string aotName in AOTMetaAssemblyNames)
         {
             yield return LoadAOTMetadata(BootstrapPackage, aotName);
         }
 
-        // ── Step 3: 加载热更程序集（从内置或已缓存的热更版本）──
+        // ── Step 3: 加载热更程序集 ──
         foreach (string hotName in HotUpdateAssemblyNames)
         {
             yield return LoadHotUpdateAssembly(BootstrapPackage, hotName);
         }
 
-        // ── Step 4: 预热常用泛型方法，减少首次调用 JIT 延迟（可选优化）──
+        // ── Step 4: 预热常用泛型方法 ──
         PreJitCommonMethods();
 
         IsLoaded = true;
@@ -108,13 +148,11 @@ public static class HybridCLRPreloader
 
     /// <summary>
     /// 预热 Mirror 网络层和 YooAsset 资源系统中常用的泛型方法。
-    /// 避免热更代码首次调用这些方法时出现 JIT 卡顿。
     /// </summary>
     private static void PreJitCommonMethods()
     {
         try
         {
-            // 预热 Mirror NetworkBehaviour 常用 API
             var networkBehaviourType = Type.GetType("Mirror.NetworkBehaviour, Mirror");
             if (networkBehaviourType != null)
             {
@@ -126,7 +164,6 @@ public static class HybridCLRPreloader
                 }
             }
 
-            // 预热常见的 Mirror 同步列表类型
             var syncListTypes = new[]
             {
                 "Mirror.SyncList`1, Mirror",
@@ -139,13 +176,36 @@ public static class HybridCLRPreloader
                     RuntimeApi.PreJitClass(type);
             }
 
+            // 预热热更程序集中可能用到的泛型实例化（避免运行时报 MissingMethodException）。
+            // GameLogic.dll 已在 Step 3 加载完毕，此处的反射可以找到热更类型。
+            PreJitHotUpdateGenerics();
+
             Debug.Log("[HybridCLRPreloader] PreJit optimization applied.");
         }
         catch (Exception e)
         {
-            // PreJit 失败不影响核心功能，仅影响首次调用性能
             Debug.LogWarning($"[HybridCLRPreloader] PreJit skipped (non-critical): {e.Message}");
         }
+    }
+
+    /// <summary>
+    /// 预热热更程序集（GameLogic）中值类型在 List&lt;T&gt; 等泛型容器
+    /// 中的方法实例化，避免运行时抛出 MissingMethodException。
+    ///
+    /// 背景：AOT 侧无法引用热更类型，List&lt;StartAnim&gt;.get_Item 等泛型方法
+    /// 不会在 il2cpp 中提前生成。DLL 加载后通过反射手动触发 PreJit。
+    /// </summary>
+    private static void PreJitHotUpdateGenerics()
+    {
+        // StartAnim (struct in GameLogic.dll) → List<StartAnim>
+        var startAnimType = Type.GetType("LF.GameLogic.StartAnim, GameLogic");
+        if (startAnimType != null)
+        {
+            var listOfStartAnim = typeof(System.Collections.Generic.List<>).MakeGenericType(startAnimType);
+            RuntimeApi.PreJitClass(listOfStartAnim);
+        }
+
+        // 如需添加更多热更值类型的泛型容器预热，在此追加。
     }
 
     /// <summary>
@@ -160,7 +220,6 @@ public static class HybridCLRPreloader
         var builtinParams = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
         builtinParams.AddParameter(EFileSystemParameter.CopyBuiltinPackageManifest, true);
 
-        // 使用 PlayerPrefs 中缓存的远端 URL（与 PatchManager 保持一致）
         string remoteUrl = PatchManager.GetBestRemoteUrl(PackageName, "http://127.0.0.1:8000");
         var remoteService = new ConfigurableRemoteService(remoteUrl);
         var cacheParams = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remoteService);
@@ -181,9 +240,8 @@ public static class HybridCLRPreloader
             yield break;
         }
 
-        // 使用本地缓存的版本号或内置版本号加载清单
+        // 优先使用本地缓存的版本号
         string localVersion = PatchManager.GetLocalVersion(PackageName);
-
         if (!string.IsNullOrEmpty(localVersion))
         {
             var manifestOp = BootstrapPackage.LoadPackageManifestAsync(
@@ -211,23 +269,25 @@ public static class HybridCLRPreloader
                 Debug.Log($"[HybridCLRPreloader] Loaded builtin manifest: {versionOp.PackageVersion}");
             }
         }
+        else
+        {
+            Debug.LogError("[HybridCLRPreloader] No builtin catalog found. "
+                         + "Ensure resources were deployed with forceCopyToStreamingAssets=true.");
+        }
     }
 
     /// <summary>
-    /// 加载 AOT 补充元数据（本地加载，不访问网络）。
-    /// 这些文件必须在 StreamingAssets 中随包发布。
+    /// 加载 AOT 补充元数据。
     /// </summary>
     private static IEnumerator LoadAOTMetadata(ResourcePackage package, string assemblyName)
     {
-        // AddressByFolderAndFileName 规则生成的地址格式: {文件夹名}_{文件名(无后缀)}
-        // 如: HotUpdateDlls_LFFramework.dll
         string assetPath = $"{DllAssetPrefix}{assemblyName}.dll";
         var handle = package.LoadAssetAsync<TextAsset>(assetPath);
         yield return handle;
 
         if (handle.Status != EOperationStatus.Succeeded || handle.AssetObject == null)
         {
-            Debug.Log($"[HybridCLRPreloader] AOT metadata not found (may be built into il2cpp): {assemblyName}");
+            Debug.Log($"[HybridCLRPreloader] AOT metadata not found: {assemblyName} (may be built into il2cpp)");
             yield break;
         }
 
@@ -252,20 +312,16 @@ public static class HybridCLRPreloader
 
     /// <summary>
     /// 加载热更程序集 DLL。
-    /// 首次启动从内置资源加载，热更后从 Sandbox 缓存加载。
     /// </summary>
     private static IEnumerator LoadHotUpdateAssembly(ResourcePackage package, string assemblyName)
     {
-        // AddressByFolderAndFileName 规则生成的地址格式: {文件夹名}_{文件名(无后缀)}
-        // 如: HotUpdateDlls_GameLogic.dll
         string assetPath = $"{DllAssetPrefix}{assemblyName}.dll";
         var handle = package.LoadAssetAsync<TextAsset>(assetPath);
         yield return handle;
 
         if (handle.Status != EOperationStatus.Succeeded || handle.AssetObject == null)
         {
-            Debug.LogError($"[HybridCLRPreloader] Hot update DLL not found: {assemblyName}! "
-                         + "App cannot start without it.");
+            Debug.LogError($"[HybridCLRPreloader] Hot update DLL not found: {assemblyName}");
             yield break;
         }
 

@@ -71,6 +71,8 @@ public static class HybridCLRSetup
             "kcp2k",
             "YooAsset",
             "HybridCLR.Runtime",
+            "DOTween",
+            "DOTween.Modules",
         };
         Debug.Log($"[HybridCLRSetup] AOT patch assemblies: {string.Join(", ", settings.patchAOTAssemblies)}");
 

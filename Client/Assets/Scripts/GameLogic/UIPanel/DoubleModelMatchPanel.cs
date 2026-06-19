@@ -73,7 +73,7 @@ public class DoubleModelMatchPanel : BasePanel
         matchSchedule = TimerMgr.Instance.Schedule(MatchUpdate, -1, 1, 1);
         OnRestoreMatchAnim();
 
-        // ÿ��Showʱ���´�������
+        // 每次Show时重新创建动画序列
         CreateMatchSequence();
         matchEndSequence.Pause();
         matchSequence.Restart();
@@ -92,13 +92,13 @@ public class DoubleModelMatchPanel : BasePanel
         EventDispatcher.RemoveObserver(this, MessageEvent.StartGame, null);
         EventDispatcher.RemoveObserver(this, MessageEvent.OnQuitMatch, null);
 
-        // ����ʱ��ͣ����
+        // 隐藏时暂停动画序列
         PauseAnimSequence();
     }
 
     private void CreateMatchSequence()
     {
-        // ȷ�������б�����
+        // 确保旧序列已销毁
         if (matchSequence != null && matchSequence.IsActive())
         {
             matchSequence.Kill();
@@ -106,7 +106,7 @@ public class DoubleModelMatchPanel : BasePanel
         matchSequence = DOTween.Sequence();
         matchSequence.Append(leftBattle.DOBlendableLocalMoveBy(new Vector3(-500, 0, 0), 2f, true));
         matchSequence.Join(rightBattle.DOBlendableLocalMoveBy(new Vector3(500, 0, 0), 2f, true));
-        // �������в��Զ�����
+        // 设置序列不自动销毁
         matchSequence.SetAutoKill(false);
 
         if (matchEndSequence != null && matchEndSequence.IsActive())
@@ -116,7 +116,7 @@ public class DoubleModelMatchPanel : BasePanel
         matchEndSequence = DOTween.Sequence();
         matchEndSequence.Append(leftBattle.DOBlendableLocalMoveBy(new Vector3(500, 0, 0), 2f, true));
         matchEndSequence.Join(rightBattle.DOBlendableLocalMoveBy(new Vector3(-500, 0, 0), 2f, true));
-        // �������в��Զ�����
+        // 设置序列不自动销毁
         matchEndSequence.SetAutoKill(false);
     }
 

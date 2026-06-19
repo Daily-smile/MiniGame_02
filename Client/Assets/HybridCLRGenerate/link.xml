@@ -27,6 +27,7 @@
     <type fullname="LF.Framework.ConsoleToScreen" preserve="all" />
     <type fullname="LF.Framework.EventCallback" preserve="all" />
     <type fullname="LF.Framework.EventDispatcher" preserve="all" />
+    <type fullname="LF.Framework.IGameLogicEntry" preserve="all" />
     <type fullname="LF.Framework.MessageEvent" preserve="all" />
     <type fullname="LF.Framework.MessageEventType" preserve="all" />
     <type fullname="LF.Framework.ObjectPool" preserve="all" />
@@ -58,6 +59,7 @@
     <type fullname="LF.Network.IProjectile" preserve="all" />
     <type fullname="LF.Network.IRemotePlayerView" preserve="all" />
     <type fullname="LF.Network.MirrorPlayer" preserve="all" />
+    <type fullname="LF.Network.MirrorPlayerComponentSetup" preserve="all" />
     <type fullname="LF.Network.PlayerConnectionEvent" preserve="all" />
     <type fullname="LF.Network.RoomInfo" preserve="all" />
     <type fullname="LF.Network.StartGameResponse" preserve="all" />
@@ -213,23 +215,19 @@
     <type fullname="System.Boolean" preserve="all" />
     <type fullname="System.Byte" preserve="all" />
     <type fullname="System.Collections.Generic.Dictionary`2" preserve="all" />
-    <type fullname="System.Collections.Generic.Dictionary`2/KeyCollection" preserve="all" />
-    <type fullname="System.Collections.Generic.Dictionary`2/KeyCollection/Enumerator" preserve="all" />
-    <type fullname="System.Collections.Generic.Dictionary`2/ValueCollection" preserve="all" />
-    <type fullname="System.Collections.Generic.Dictionary`2/ValueCollection/Enumerator" preserve="all" />
+    <type fullname="System.Collections.Generic.Dictionary`2/Enumerator" preserve="all" />
     <type fullname="System.Collections.Generic.IEnumerator`1" preserve="all" />
+    <type fullname="System.Collections.Generic.KeyValuePair`2" preserve="all" />
     <type fullname="System.Collections.Generic.List`1" preserve="all" />
     <type fullname="System.Collections.Generic.List`1/Enumerator" preserve="all" />
     <type fullname="System.Collections.IEnumerator" preserve="all" />
-    <type fullname="System.Converter`2" preserve="all" />
     <type fullname="System.DateTime" preserve="all" />
     <type fullname="System.Delegate" preserve="all" />
     <type fullname="System.Diagnostics.DebuggableAttribute" preserve="all" />
     <type fullname="System.Diagnostics.DebuggableAttribute/DebuggingModes" preserve="all" />
-    <type fullname="System.Diagnostics.DebuggerBrowsableAttribute" preserve="all" />
-    <type fullname="System.Diagnostics.DebuggerBrowsableState" preserve="all" />
     <type fullname="System.Diagnostics.DebuggerHiddenAttribute" preserve="all" />
     <type fullname="System.Enum" preserve="all" />
+    <type fullname="System.Exception" preserve="all" />
     <type fullname="System.GC" preserve="all" />
     <type fullname="System.IDisposable" preserve="all" />
     <type fullname="System.Int32" preserve="all" />
@@ -238,12 +236,13 @@
     <type fullname="System.Object" preserve="all" />
     <type fullname="System.ParamArrayAttribute" preserve="all" />
     <type fullname="System.Predicate`1" preserve="all" />
+    <type fullname="System.Reflection.BindingFlags" preserve="all" />
+    <type fullname="System.Reflection.FieldInfo" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.CompilationRelaxationsAttribute" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.CompilerGeneratedAttribute" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.IteratorStateMachineAttribute" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.RuntimeCompatibilityAttribute" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.RuntimeHelpers" preserve="all" />
-    <type fullname="System.Runtime.CompilerServices.TupleElementNamesAttribute" preserve="all" />
     <type fullname="System.RuntimeFieldHandle" preserve="all" />
     <type fullname="System.RuntimeTypeHandle" preserve="all" />
     <type fullname="System.Single" preserve="all" />
@@ -251,7 +250,6 @@
     <type fullname="System.Text.StringBuilder" preserve="all" />
     <type fullname="System.Threading.Interlocked" preserve="all" />
     <type fullname="System.Type" preserve="all" />
-    <type fullname="System.ValueTuple`2" preserve="all" />
     <type fullname="System.ValueType" preserve="all" />
   </assembly>
 </linker>

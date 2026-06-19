@@ -33,7 +33,10 @@ public class MyRoomUI : BaseUI
     private RectTransform chatScrolRt;
     private MyScrollRect chatScroll;
     private List<MyRoomItem> all_playerList;
-    private List<ChatMsg> chatMsgs;
+    // 使用数组而非 List<T>：ChatMsg 是热更程序集中的 struct，
+    // List<ChatMsg> 的泛型方法在 AOT 侧无法提前生成。
+    private ChatMsg[] chatMsgs = new ChatMsg[0];
+    private int chatMsgCount;
     private RoomListPanel bindPanel;
     private bool isHasNewMsg;
     private bool isHasDisconnect;
@@ -54,7 +57,7 @@ public class MyRoomUI : BaseUI
         base.Init();
         bindPanel = panel;
         all_playerList = new List<MyRoomItem>();
-        chatMsgs = new List<ChatMsg>();
+        // chatMsgs 已在声明时初始化
         Transform rootTran = transform.Find("Viewport/Content");
         for (int i = 0; i < rootTran.childCount; i++)
         {
@@ -173,7 +176,7 @@ public class MyRoomUI : BaseUI
     /// <summary>清除所有聊天消息（被踢/退出房间时调用）</summary>
     private void ClearChatMessages()
     {
-        chatMsgs.Clear();
+        chatMsgCount = 0;
         isHasNewMsg = false;
         chatScrollRed.gameObject.SetActive(false);
         // 销毁聊天 UI 子对象（跳过 chatPrefab）
@@ -187,12 +190,15 @@ public class MyRoomUI : BaseUI
 
     public void OnUpdateOneChatRoomMessage(string playerName, string msg)
     {
-        if (chatMsgs.Count > 1000)
+        if (chatMsgCount > 1000)
         {
-            chatMsgs.RemoveAt(0);
+            System.Array.Copy(chatMsgs, 1, chatMsgs, 0, chatMsgCount - 1);
+            chatMsgCount--;
         }
         ChatMsg chatMsg = new ChatMsg(playerName, msg);
-        chatMsgs.Add(chatMsg);
+        if (chatMsgCount >= chatMsgs.Length)
+            System.Array.Resize(ref chatMsgs, Mathf.Max(1, chatMsgs.Length * 2));
+        chatMsgs[chatMsgCount++] = chatMsg;
         AddOneRoomChatMessage(chatMsg);
         isHasNewMsg = true;
         chatTranRoot.GetComponent<VerticalLayoutGroup>().CalculateLayoutInputVertical();

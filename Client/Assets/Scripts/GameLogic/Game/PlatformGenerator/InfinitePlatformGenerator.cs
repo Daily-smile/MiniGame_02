@@ -10,7 +10,7 @@ public class InfinitePlatformGenerator : MonoBehaviour
 {
     [Header("References")]
     public Transform player;
-    public Transform grid; // ����ƽ̨�ĸ�����
+    public Transform grid; // 存放平台的父节点
 
     [Header("Generation Parameters")]
     public float lookAheadDistance = 20f;
@@ -29,9 +29,9 @@ public class InfinitePlatformGenerator : MonoBehaviour
     [Range(0, 1)] public float itemSpawnChance = 0.2f;
     public List<GameObject> obstaclePrefabs;
     [Range(0, 1)] public float obstacleSpawnChance = 0.2f;
-    public Transform[] spawnPoints; // ���Ԥ����û��Ԥ��㣬���ô�ȫ�ֵ㣬������Ԥ�����Դ�
+    public Transform[] spawnPoints; // 如果没有预置点，则使用全局点，这里是预置点的来源
 
-    // �����
+    // 对象池字典
     private Dictionary<GameObject, Queue<GameObject>> platformPools = new();
     private Dictionary<GameObject, Queue<GameObject>> itemPools = new();
     private Dictionary<GameObject, Queue<GameObject>> obstaclePools = new();
@@ -76,7 +76,7 @@ public class InfinitePlatformGenerator : MonoBehaviour
             obstaclePrefabs.Add(item);
         }
         grid = transform.Find("Grid");
-        // ��ʼ������أ���Ԥ���������ʵ����
+        // 初始化对象池，预创建平台实例
         GenerateStartPlatform();
 
         EventDispatcher.AddObserver(this, MessageEvent.AgainGame, OnAgainGame, null);
@@ -89,12 +89,12 @@ public class InfinitePlatformGenerator : MonoBehaviour
 
     void Update()
     {
-        // ��ǰ����
+        // 向前生成
         while (NeedMorePlatforms())
         {
             GenerateNextPlatform();
         }
-        // ������
+        // 向后回收
         RecyclePlatforms();
     }
 
@@ -109,14 +109,14 @@ public class InfinitePlatformGenerator : MonoBehaviour
     bool NeedMorePlatforms()
     {
         if (activePlatforms.Count == 0) return true;
-        // ʹ�����һ��ƽ̨�Ļ�׼�ұ߽磨���⶯̬�ƶ�Ӱ�죩
+        // 使用最后一个平台的基准右边界（避免动态移动影响）
         float farthestBaseRight = activePlatforms[^1].BaseRight;
         return farthestBaseRight < player.position.x + lookAheadDistance;
     }
 
     void GenerateStartPlatform()
     {
-        // ʹ�õ�һ��ƽ̨���ݣ�������Ϊ��ͨƽ̨��
+        // 使用第一个平台数据，生成为普通平台
         var data = platformDatas[0];
 
         GameObject go = GetPooledObject(data.prefab, platformPools);
@@ -127,7 +127,7 @@ public class InfinitePlatformGenerator : MonoBehaviour
         var controller = go.GetComponent<PlatformController>();
         controller.Init(data, Vector3.zero, player, true);
 
-        // �����Ӷ�̬/��������������ɵ���/�ϰ�
+        // 不添加动态/陷阱组件，仅生成道具/障碍
 
         activePlatforms.Add(controller);
     }
@@ -135,14 +135,14 @@ public class InfinitePlatformGenerator : MonoBehaviour
     void GenerateNextPlatform()
     {
         var prev = activePlatforms[^1];
-        // ���ѡ��ƽ̨���ͣ����ǿ���Լ����
+        // 随机选择平台类型，考虑可行性约束
         PlatformData data = SelectValidPlatformData(prev.width);
-        if (data == null) return; // �޷�����ʱ�ʵ�����
+        if (data == null) return; // 无法满足要求时适当调整
 
         float gap = Random.Range(minGap, maxJumpDistance);
         float dy = Random.Range(-maxJumpHeight, maxJumpHeight);
         float newX = prev.BaseRight + gap;
-        float newY = prev.BaseY + dy; // BaseYΪ��׼Y���꣨����ʱ��y��
+        float newY = prev.BaseY + dy; // BaseY为基准Y坐标（生成时的y）
 
         var newPlatform = CreatePlatform(data, new Vector3(newX, newY, 0));
         activePlatforms.Add(newPlatform);
@@ -150,23 +150,23 @@ public class InfinitePlatformGenerator : MonoBehaviour
 
     PlatformData SelectValidPlatformData(float prevWidth)
     {
-        // ��ʵ�֣����ѡһ����������ȹ������޷�������С��϶�������Լ���
+        // 简单实现：随机选一个，如果宽度过大导致无法满足最小间隙则另做约束
         int attempts = 10;
         while (attempts-- > 0)
         {
             var data = platformDatas[Random.Range(0, platformDatas.Count)];
-            float minRequiredGap = prevWidth / 2 + data.width / 2; // �����ص�����С���ľ��룬�������ǻ��ڱ�Ե������gap>=0���ɣ����������
-            // ʵ���ϻ��ڱ�Ե���ɣ�ֻҪgap>=0�Ͳ����ص������Կ���������
+            float minRequiredGap = prevWidth / 2 + data.width / 2; // 避免重叠的最小中心距离，但实际上基于边缘，只要gap>=0即可，不会重叠
+            // 实际上基于边缘即可，只要gap>=0就不会重叠，所以可以放宽
             return data;
         }
-        return platformDatas[0]; // ����
+        return platformDatas[0]; // 备用回退
     }
 
     PlatformController CreatePlatform(PlatformData data, Vector3 position)
     {
         GameObject go = GetPooledObject(data.prefab, platformPools);
 
-        // �������Ƴ���ȷ���ɾ���
+        // 先移除旧组件以确保干净
         var oldDyn = go.GetComponent<DynamicPlatform>();
         if (oldDyn) Destroy(oldDyn);
         var oldTrap = go.GetComponent<TrapPlatform>();
@@ -179,21 +179,21 @@ public class InfinitePlatformGenerator : MonoBehaviour
         var controller = go.GetComponent<PlatformController>();
         controller.Init(data, position, player);
 
-        // ���Ӷ�̬����������ʣ�
+        // 按概率添加动态平台组件
         if (Random.value < dynamicProbability && data.canBeDynamic)
         {
             var dynamic = go.AddComponent<DynamicPlatform>();
             dynamic.Init(controller);
         }
 
-        // ���ӻ�������������ʣ�
+        // 按概率添加陷阱平台组件
         if (Random.value < trapProbability && data.canBeTrap)
         {
             var trap = go.AddComponent<TrapPlatform>();
             trap.Init(controller);
         }
 
-        // ���ɵ���/�ϰ�
+        // 生成道具/障碍
         SpawnItemsAndObstacles(controller);
 
         return controller;
@@ -242,32 +242,32 @@ public class InfinitePlatformGenerator : MonoBehaviour
 
     void RecyclePlatform(PlatformController p)
     {
-        // ���������壨����/�ϰ���
-        foreach (var (obj, prefab) in p.GetAllItems())
+        // 回收子物体（道具/障碍）
+        for (int i = p.ItemCount - 1; i >= 0; i--)
         {
-            ReturnToPool(obj, itemPools);
+            ReturnToPool(p.GetItemObject(i), itemPools);
         }
-        foreach (var (obj, prefab) in p.GetAllObstacles())
+        for (int i = p.ObstacleCount - 1; i >= 0; i--)
         {
-            ReturnToPool(obj, obstaclePools);
+            ReturnToPool(p.GetObstacleObject(i), obstaclePools);
         }
         p.ClearChildren();
 
-        // �Ƴ���̬�ͻ����������ֹ�´θ���ʱ������
+        // 移除动态和陷阱组件，防止下次复用时的冲突
         var dyn = p.GetComponent<DynamicPlatform>();
         if (dyn != null) Destroy(dyn);
 
         var trap = p.GetComponent<TrapPlatform>();
         if (trap != null) Destroy(trap);
 
-        // ����ƽ̨״̬��λ�á���ײ���ȣ�
+        // 重置平台状态（位置、碰撞器等）
         p.ResetPlatform();
 
-        // ƽ̨�����س�
+        // 平台本身回池
         ReturnToPool(p.gameObject, platformPools);
     }
 
-    // ����ط���
+    // 对象池工具方法
     GameObject GetPooledObject(GameObject prefab, Dictionary<GameObject, Queue<GameObject>> pool)
     {
         if (!pool.ContainsKey(prefab))
@@ -284,7 +284,7 @@ public class InfinitePlatformGenerator : MonoBehaviour
             var obj = Instantiate(prefab);
             PooledObject pooledObject = obj.GetComponent<PooledObject>();
             if (pooledObject == null ) 
-                pooledObject = obj.AddComponent<PooledObject>(); // ȷ����PooledObject���
+                pooledObject = obj.AddComponent<PooledObject>(); // 确保有PooledObject组件
             pooledObject.prefab = prefab;
             return obj;
         }
@@ -302,7 +302,7 @@ public class InfinitePlatformGenerator : MonoBehaviour
         }
         else
         {
-            Destroy(obj); // ��ȫ����
+            Destroy(obj); // 安全回退处理
         }
     }
 }

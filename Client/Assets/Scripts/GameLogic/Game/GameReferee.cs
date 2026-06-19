@@ -29,7 +29,10 @@ public class GameReferee : Singleton<GameReferee>
 {
     private Dictionary<string, Player> allPlayers;
     private Dictionary<Transform, FSM> enermyCaches;
-    private List<CleanupTileMap> cleanupTiles;
+    // 使用数组而非 List<T>：CleanupTileMap 是热更程序集中的 struct，
+    // List<CleanupTileMap> 的泛型方法（Add/get_Item）在 AOT 侧无法提前生成。
+    private CleanupTileMap[] cleanupTiles = new CleanupTileMap[0];
+    private int cleanupTileCount;
     private List<GameObject> otherDeatroyCaches;
     /// <summary>
     /// 终点
@@ -57,7 +60,6 @@ public class GameReferee : Singleton<GameReferee>
     {
         allPlayers = new Dictionary<string, Player>();
         enermyCaches = new Dictionary<Transform, FSM>();
-        cleanupTiles = new List<CleanupTileMap>();
         otherDeatroyCaches = new List<GameObject>();
     }
 
@@ -65,7 +67,7 @@ public class GameReferee : Singleton<GameReferee>
     {
         allPlayers.Clear();
         enermyCaches.Clear();
-        cleanupTiles.Clear();
+        cleanupTileCount = 0;
         otherDeatroyCaches.Clear();
         RemoveObserverEvents();
         AddObserverEvents();
@@ -94,9 +96,9 @@ public class GameReferee : Singleton<GameReferee>
     private void UpdatePlayerUI()
     {
         if (Time.frameCount % 10 != 0) return;
-        foreach (Player player in allPlayers.Values)
+        foreach (var kvp in allPlayers)
         {
-            player.OnUpdateUI();
+            kvp.Value.OnUpdateUI();
         }
     }
 
@@ -142,14 +144,14 @@ public class GameReferee : Singleton<GameReferee>
         UpdateManager.Instance.Unregister(UpdatePlayerUI);
         destinationPoint = null;
         destinationTotalDistance = 0;
-        foreach (Player player in allPlayers.Values)
+        foreach (var kvp in allPlayers)
         {
-            player.OnQuitGame();
-            player.Dispose();
+            kvp.Value.OnQuitGame();
+            kvp.Value.Dispose();
         }
         allPlayers.Clear();
         enermyCaches.Clear();
-        cleanupTiles.Clear();
+        cleanupTileCount = 0;
         otherDeatroyCaches.Clear();
         return false;
     }
@@ -181,12 +183,12 @@ public class GameReferee : Singleton<GameReferee>
         StartGameRuning();
         if (GameManager.Instance.gameModel == GameManager.GameModel.None || GameManager.Instance.gameModel == GameManager.GameModel.Single || GameManager.Instance.gameModel == GameManager.GameModel.Infinity)
         {
-            foreach (Player player in allPlayers.Values)
+            foreach (var kvp in allPlayers)
             {
-                player.OnGameAgainOnSingleModel();
-                if (player.isSelf)
+                kvp.Value.OnGameAgainOnSingleModel();
+                if (kvp.Value.isSelf)
                 {
-                    EventDispatcher.PostEvent(MessageEvent.OnRegistSelfPlayer, this, player);
+                    EventDispatcher.PostEvent(MessageEvent.OnRegistSelfPlayer, this, kvp.Value);
                 }
             }
         }
@@ -197,11 +199,12 @@ public class GameReferee : Singleton<GameReferee>
                 player.OnGameAgainOnMultipleModel();
             }
         }
-        foreach (CleanupTileMap tile in cleanupTiles)
+        for (int i = 0; i < cleanupTileCount; i++)
         {
+            CleanupTileMap tile = cleanupTiles[i];
             tile.tilemap.SetTile(tile.pos, tile.tile);
         }
-        cleanupTiles.Clear();
+        cleanupTileCount = 0;
         for (int i = 0; i < otherDeatroyCaches.Count; i++)
         {
             otherDeatroyCaches[i].SetActive(true);
@@ -240,7 +243,9 @@ public class GameReferee : Singleton<GameReferee>
     public void AddOneCleanupTile(Vector3Int toPos, Tilemap tilemap, TileBase tile)
     {
         CleanupTileMap cleanupTile = new CleanupTileMap(tilemap, toPos, tile);
-        cleanupTiles.Add(cleanupTile);
+        if (cleanupTileCount >= cleanupTiles.Length)
+            System.Array.Resize(ref cleanupTiles, Mathf.Max(1, cleanupTiles.Length * 2));
+        cleanupTiles[cleanupTileCount++] = cleanupTile;
     }
 
     public void AddOneDeatroyCache(GameObject obj)
@@ -256,16 +261,17 @@ public class GameReferee : Singleton<GameReferee>
             Debug.LogError("Generate player fail!");
             return;
         }
-        foreach (Player player in allPlayers.Values)
+        foreach (var kvp in allPlayers)
         {
-            bool isSelf = player.PlayName.Equals(GameManager.Instance.userName);
+            bool isSelf = kvp.Value.PlayName.Equals(GameManager.Instance.userName);
             if (isSelf)
             {
                 GameObject newPlayer = GameObject.Instantiate(rolePrefab);
                 newPlayer.transform.position = Vector3.zero;
                 newPlayer.name = "Player";
                 newPlayer.transform.Find("Sign").gameObject.SetActive(allPlayers.Count > 1);
-                player.PlayObj = newPlayer.transform;
+                GameLogicEntry.SetupPlayerComponents(newPlayer);
+                kvp.Value.PlayObj = newPlayer.transform;
             }
         }
         UpdateManager.Instance.RegisterLateUpdate(UpdatePlayerUI);
@@ -292,17 +298,17 @@ public class GameReferee : Singleton<GameReferee>
                             && (GameManager.Instance.gameModel == GameManager.GameModel.Double
                                 || GameManager.Instance.gameModel == GameManager.GameModel.Team);
 
-        foreach (Player player in allPlayers.Values)
+        foreach (var kvp in allPlayers)
         {
-            bool isSelf = player.PlayName.Equals(GameManager.Instance.userName);
+            bool isSelf = kvp.Value.PlayName.Equals(GameManager.Instance.userName);
 
             if (isMirrorMode)
             {
                 // Mirror多人模式: 玩家由服务端在双方场景就绪后统一生成, 此处仅对已生成的玩家重新定位
-                if (player.PlayObj != null)
+                if (kvp.Value.PlayObj != null)
                 {
-                    player.PlayObj.position = drawPos;
-                    Transform sign = player.PlayObj.Find("Sign");
+                    kvp.Value.PlayObj.position = drawPos;
+                    Transform sign = kvp.Value.PlayObj.Find("Sign");
                     if (sign != null) sign.gameObject.SetActive(isSelf && allPlayers.Count > 1);
                 }
             }
@@ -318,11 +324,12 @@ public class GameReferee : Singleton<GameReferee>
                 newPlayer.transform.position = drawPos;
                 newPlayer.name = "Player";
                 newPlayer.transform.Find("Sign").gameObject.SetActive(allPlayers.Count > 1);
-                player.PlayObj = newPlayer.transform;
+                GameLogicEntry.SetupPlayerComponents(newPlayer);
+                kvp.Value.PlayObj = newPlayer.transform;
             }
-            else if (player.PlayObj != null)
+            else if (kvp.Value.PlayObj != null)
             {
-                player.PlayObj.position = drawPos;
+                kvp.Value.PlayObj.position = drawPos;
             }
             else
             {
@@ -337,8 +344,8 @@ public class GameReferee : Singleton<GameReferee>
                 newPlayer.name = "NetPlayer";
                 newPlayer.transform.Find("Sign").gameObject.SetActive(false);
                 MirrorPlayer mp = newPlayer.GetComponent<MirrorPlayer>();
-                if (mp != null) mp.playerName = player.PlayName;
-                player.PlayObj = newPlayer.transform;
+                if (mp != null) mp.playerName = kvp.Value.PlayName;
+                kvp.Value.PlayObj = newPlayer.transform;
             }
         }
         UpdateManager.Instance.RegisterLateUpdate(UpdatePlayerUI);
@@ -348,16 +355,16 @@ public class GameReferee : Singleton<GameReferee>
     {
         self = null;
         int index = 0;
-        foreach (Player player in allPlayers.Values)
+        foreach (var kvp in allPlayers)
         {
-            if (player.isSelf)
+            if (kvp.Value.isSelf)
             {
-                self = player;
+                self = kvp.Value;
             }
-            gameUI.players[index].Initialize(player.PlayName, player.isSelf, gameUI);
+            gameUI.players[index].Initialize(kvp.Value.PlayName, kvp.Value.isSelf, gameUI);
             if (GameManager.Instance.gameModel != GameManager.GameModel.Infinity)
             {
-                player.PlayerUI = gameUI.players[index];
+                kvp.Value.PlayerUI = gameUI.players[index];
                 gameUI.players[index].gameObject.SetActive(true);
             }
             else

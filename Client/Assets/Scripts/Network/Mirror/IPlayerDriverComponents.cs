@@ -1,3 +1,6 @@
+using System;
+using UnityEngine;
+
 namespace LF.Network
 {
 /// <summary>
@@ -37,5 +40,27 @@ public interface IHitEffectHandler
 public interface IProjectile
 {
     void Initialized(bool facingRight);
+}
+
+/// <summary>
+/// MirrorPlayer 组件初始化钩子。
+/// 热更程序集（GameLogic）在启动时注册回调，为 MirrorPlayer 动态添加 PlayerController、
+/// PlayerAnimator 等热更脚本。避免预制体直接引用热更 MonoBehaviour 导致的序列化不匹配。
+/// </summary>
+public static class MirrorPlayerComponentSetup
+{
+    /// <summary>
+    /// 当 MirrorPlayer 的 OnStartClient 触发时调用。
+    /// 参数: MirrorPlayer 所在的 GameObject。
+    /// 由 GameLogicEntry 在初始化时注册。
+    /// </summary>
+    public static Action<GameObject> OnMirrorPlayerCreated;
+
+    /// <summary>
+    /// 当 MirrorPlayer 获取本地权限时调用（仅本地玩家）。
+    /// 参数: MirrorPlayer 所在的 GameObject。
+    /// 由 GameLogicEntry 在初始化时注册。
+    /// </summary>
+    public static Action<GameObject> OnMirrorPlayerAuthority;
 }
 }

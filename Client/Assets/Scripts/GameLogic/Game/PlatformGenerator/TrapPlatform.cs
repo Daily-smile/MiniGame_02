@@ -22,7 +22,7 @@ public class TrapPlatform : MonoBehaviour
         controller = ctrl;
         col = GetComponent<Collider2D>();
         rend = GetComponentsInChildren<SpriteRenderer>();
-        // �������
+        // 闅忔満閫夋嫨闄烽槺绫诲瀷
         trapType = (TrapType)Random.Range(0, 3);
         if (trapType == TrapType.TimedDisappear)
         {
@@ -32,7 +32,7 @@ public class TrapPlatform : MonoBehaviour
         {
             StartCoroutine(BlinkRoutine());
         }
-        // OneTime ͨ����ײ����
+        // OneTime 绫诲瀷閫氳繃纰版挒瑙﹀彂
     }
 
     void Toggle()

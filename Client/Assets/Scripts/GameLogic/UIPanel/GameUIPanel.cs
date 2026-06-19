@@ -174,10 +174,10 @@ public class GameUIPanel : BasePanel
     {
         if (propType == PropType.None)
         {
-            foreach (PropType key in propItems.Keys)
+            foreach (var kvp in propItems)
             {
-                propItems[key].transform.GetComponent<Toggle>().isOn = false;
-                propItems[key].gameObject.SetActive(false);
+                kvp.Value.transform.GetComponent<Toggle>().isOn = false;
+                kvp.Value.gameObject.SetActive(false);
                 useBtn.gameObject.SetActive(false);
             }
             return;

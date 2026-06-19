@@ -33,6 +33,8 @@ public static class HybridCLRBootstrap
         "kcp2k",
         "YooAsset",
         "HybridCLR.Runtime",
+        "DOTween",
+        "DOTween.Modules",
     };
 
     /// <summary>
@@ -44,9 +46,9 @@ public static class HybridCLRBootstrap
     };
 
     /// <summary>
-    /// YooAsset 资源地址前缀，热更 DLL 的加载地址格式："{Prefix}{AssemblyName}.dll.bytes"
+    /// YooAsset 资源地址前缀，热更 DLL 的加载地址格式："{Prefix}{AssemblyName}.dll"
     /// </summary>
-    private const string DllAssetPrefix = "HotUpdateDlls/";
+    private const string DllAssetPrefix = "HotUpdateDlls_";
 
     /// <summary>
     /// 加载所有热更程序集和 AOT 补充元数据。
@@ -88,7 +90,7 @@ public static class HybridCLRBootstrap
     /// </summary>
     private static IEnumerator LoadMetadataIfExists(ResourcePackage package, string assemblyName)
     {
-        string assetPath = $"{DllAssetPrefix}{assemblyName}.dll.bytes";
+        string assetPath = $"{DllAssetPrefix}{assemblyName}.dll";
         var handle = package.LoadAssetAsync<TextAsset>(assetPath);
         yield return handle;
 
@@ -128,7 +130,7 @@ public static class HybridCLRBootstrap
     /// </summary>
     private static IEnumerator LoadHotUpdateAssembly(ResourcePackage package, string assemblyName)
     {
-        string assetPath = $"{DllAssetPrefix}{assemblyName}.dll.bytes";
+        string assetPath = $"{DllAssetPrefix}{assemblyName}.dll";
         var handle = package.LoadAssetAsync<TextAsset>(assetPath);
         yield return handle;
 

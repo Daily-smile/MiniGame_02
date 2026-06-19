@@ -6,7 +6,7 @@ using LF.Network;
 namespace LF.GameLogic
 {
 /// <summary>
-/// ���ⰴť������
+/// 虚拟按钮类
 /// </summary>
 [System.Serializable]
 public class VirtualButton
@@ -24,16 +24,16 @@ public class VirtualButton
 }
 
 /// <summary>
-/// ������������
+/// 虚拟轴类
 /// </summary>
 [System.Serializable]
 public class VirtualAxis
 {
     public string axisName;
     public float value;
-    public float sensitivity = 3.0f; // ������
-    public float gravity = 3.0f; // �����ٶ�
-    public bool snap = true; // �Ƿ���ٻ���
+    public float sensitivity = 3.0f; // 灵敏度
+    public float gravity = 3.0f; // 回正速度
+    public bool snap = true; // 是否快速回中
 
     public void Update(bool isPressed, bool isPositive)
     {
@@ -57,7 +57,7 @@ public class VirtualAxis
 }
 
 /// <summary>
-/// ��������ϵͳ
+/// 虚拟输入系统
 /// </summary>
 public class VirtualInputSystem : MonoBehaviour
 {
@@ -77,7 +77,7 @@ public class VirtualInputSystem : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        // Ԥע�᳣����
+        // 预注册常用轴
         RegisterAxis("Horizontal");
         RegisterAxis("Vertical");
     }
@@ -96,12 +96,12 @@ public class VirtualInputSystem : MonoBehaviour
 
     public void OnEarlyUpdate()
     {
-        // ������ʵ���뵽���������ӳ��
+        // 将真实输入映射到虚拟输入（早更新阶段）
         HandleRealInputMapping();
     }
     private void OnLateUpdate()
     {
-        // ÿ֡���õ�֡״̬
+        // 每帧末尾重置当帧状态
         foreach (var button in virtualButtons)
         {
             button.ResetFrameStates();
@@ -118,7 +118,7 @@ public class VirtualInputSystem : MonoBehaviour
 #endif
     }
 
-    // ע�����ⰴť
+    // 注册虚拟按钮
     public void RegisterButton(string buttonName)
     {
         if (virtualButtons.Find(b => b.buttonName == buttonName) == null)
@@ -127,7 +127,7 @@ public class VirtualInputSystem : MonoBehaviour
         }
     }
 
-    // ע��������
+    // 注册虚拟轴
     public void RegisterAxis(string axisName)
     {
         if (virtualAxes.Find(a => a.axisName == axisName) == null)
@@ -136,7 +136,7 @@ public class VirtualInputSystem : MonoBehaviour
         }
     }
 
-    // ���ð�ť����״̬
+    // 设置按钮按下状态
     public void SetButtonDown(string buttonName)
     {
         VirtualButton button = virtualButtons.Find(b => b.buttonName == buttonName);
@@ -150,7 +150,7 @@ public class VirtualInputSystem : MonoBehaviour
         }
     }
 
-    // ���ð�ť�ͷ�״̬
+    // 设置按钮释放状态
     public void SetButtonUp(string buttonName)
     {
         VirtualButton button = virtualButtons.Find(b => b.buttonName == buttonName);
@@ -164,7 +164,7 @@ public class VirtualInputSystem : MonoBehaviour
         }
     }
 
-    // ֱ��������ֵ��-1��1��
+    // 直接设置轴值（-1到1）
     public void SetAxis(string axisName, float value)
     {
         VirtualAxis axis = virtualAxes.Find(a => a.axisName == axisName);
@@ -174,19 +174,19 @@ public class VirtualInputSystem : MonoBehaviour
         }
     }
 
-    // �����᷽��ť״̬
+    // 通过按钮方向设置轴
     public void SetAxisButton(string axisName, bool isPositive, bool isPressed)
     {
         VirtualAxis axis = virtualAxes.Find(a => a.axisName == axisName);
         if (axis != null)
         {
-            // ����Ψһ�İ�ť���������ڲ�����
+            // 为每个方向创建唯一的按钮名，用于内部追踪
             string buttonName = $"{axisName}_{(isPositive ? "Positive" : "Negative")}";
 
-            // ע�ᰴť�������δע�ᣩ
+            // 注册按钮（如果尚未注册）
             RegisterButton(buttonName);
 
-            // ���ð�ť״̬
+            // 设置按钮状态
             if (isPressed)
             {
                 SetButtonDown(buttonName);
@@ -196,14 +196,14 @@ public class VirtualInputSystem : MonoBehaviour
                 SetButtonUp(buttonName);
             }
 
-            // ������ֵ
+            // 更新轴值
             bool posPressed = GetButton($"{axisName}_Positive");
             bool negPressed = GetButton($"{axisName}_Negative");
 
             if (posPressed && negPressed)
             {
-                // ����������򶼰��£����������þ�����Ϊ
-                // Ĭ����Ϊ�ǵ���Ϊ0
+                // 如果两个方向同时按下，使用默认行为
+                // 默认行为是归零
                 axis.value = 0;
             }
             else if (posPressed)
@@ -221,34 +221,34 @@ public class VirtualInputSystem : MonoBehaviour
         }
     }
 
-    // ģ�� Input.GetButtonDown
+    // 模拟 Input.GetButtonDown
     public bool GetButtonDown(string buttonName)
     {
         VirtualButton button = virtualButtons.Find(b => b.buttonName == buttonName);
         return button != null && button.wasPressedThisFrame;
     }
 
-    // ģ�� Input.GetButton
+    // 模拟 Input.GetButton
     public bool GetButton(string buttonName)
     {
         VirtualButton button = virtualButtons.Find(b => b.buttonName == buttonName);
         return button != null && button.isPressed;
     }
 
-    // ģ�� Input.GetButtonUp
+    // 模拟 Input.GetButtonUp
     public bool GetButtonUp(string buttonName)
     {
         VirtualButton button = virtualButtons.Find(b => b.buttonName == buttonName);
         return button != null && button.wasReleasedThisFrame;
     }
 
-    // ģ�� Input.GetAxisRaw
+    // 模拟 Input.GetAxisRaw
     public float GetAxisRaw(string axisName)
     {
         VirtualAxis axis = virtualAxes.Find(a => a.axisName == axisName);
         if (axis != null)
         {
-            // ����а�ť���ƣ�����ʹ�ð�ť���Ƶ�ֵ
+            // 如果有按钮控制，优先使用按钮控制的值
             bool posPressed = GetButton($"{axisName}_Positive");
             bool negPressed = GetButton($"{axisName}_Negative");
 
@@ -256,22 +256,22 @@ public class VirtualInputSystem : MonoBehaviour
             if (!posPressed && negPressed) return -1.0f;
             if (posPressed && negPressed) return 0f;
 
-            // ���û�а�ť���ƣ�����ֱ�����õ�ֵ
+            // 如果没有按钮控制，返回直接设置的值
             return axis.value;
         }
 
         return 0f;
     }
 
-    // ģ�� Input.GetAxis (��ƽ��)
+    // 模拟 Input.GetAxis（含平滑）
     public float GetAxis(string axisName)
     {
-        // ������Ҫƽ����������������ʹ�ô˷���
-        // ����򵥷���GetAxisRaw��ʵ���п�������ƽ������
+        // 当前不需要平滑处理，暂用此方法
+        // 未来若需要可在实际中补充平滑逻辑
         return GetAxisRaw(axisName);
     }
 
-    // ���������
+    // 配置轴参数
     public void ConfigureAxis(string axisName, float sensitivity, float gravity, bool snap)
     {
         VirtualAxis axis = virtualAxes.Find(a => a.axisName == axisName);

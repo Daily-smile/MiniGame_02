@@ -7,6 +7,19 @@ using LF.Network;
 
 namespace LF.GameLogic
 {
+/// <summary>
+/// [DEPRECATED] 旧版游戏启动入口（保留供参考）。
+///
+/// 当前实际启动流程：
+///   GameBootstrap (AOT, 挂载在场景 GameEntryPoint 上)
+///   → 等待 HybridCLRPreloader 完成 DLL 加载
+///   → 初始化 PatchManager (YooAsset)
+///   → 反射创建 GameLogicEntry (热更程序集入口)
+///   → GameLogicEntry.InitializeAsync() 执行 UI/网络/游戏初始化
+///
+/// 本类不再被场景引用，Start() 不会执行。
+/// 若需恢复旧流程，请将本脚本替换到场景 GameObject 上。
+/// </summary>
 public class GameLaunch : MonoBehaviour
 {
     private static bool IsInit;
@@ -29,9 +42,6 @@ public class GameLaunch : MonoBehaviour
     private IEnumerator InitAsync()
     {
         // ── Phase 1: 初始化 YooAsset 资源包（使 ResourceManager 可用）──
-        // 临时清除旧版本缓存的不完整 URL（确认正常后删除此行）
-        PlayerPrefs.DeleteKey("RemoteURL_DefaultPackage");
-
         PatchManager patchMgr = new PatchManager();
         string remoteUrl = PatchManager.GetBestRemoteUrl("DefaultPackage", "http://127.0.0.1:8000");
         yield return patchMgr.InitPackageAsync("DefaultPackage", remoteUrl);
@@ -182,8 +192,9 @@ public class GameLaunch : MonoBehaviour
         // ── 预加载所有 SpriteAtlas，确保 AssetBundle 中的精灵引用能正确解析 ──
         LoadSpriteAtlases();
 
+        // 不要 DontDestroyOnLoad 相机：场景重载时新相机会替换旧的，
+        // DontDestroyOnLoad 反而导致重复相机和 CameraController 丢失。
         GameObject mainCamera = GameObject.FindWithTag("MainCamera");
-        GameObject.DontDestroyOnLoad(mainCamera);
         GameObject canvasPrefab = ResourceManager.Instance.LoadAsset<GameObject>("Boot_Canvas");
         GameObject canvas = GameObject.Instantiate(canvasPrefab);
         canvas.transform.position = Vector3.zero;

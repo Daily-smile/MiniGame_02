@@ -89,8 +89,9 @@ public class RoomHallUI : BaseUI
     public void RefreshUI()
     {
         int count = 0;
-        foreach (RoomInfo room in roomPackList.Values)
+        foreach (var kvp in roomPackList)
         {
+            RoomInfo room = kvp.Value;
             if (count < all_roomHallItems.Count)
             {
                 all_roomHallItems[count].RefreshUI(room);

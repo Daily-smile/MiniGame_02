@@ -39,9 +39,9 @@ public class CameraController : MonoBehaviour
 
     private void OnDestroy()
     {
-        foreach (var effect in effects.Values)
+        foreach (var kvp in effects)
         {
-            effect.Dispose();
+            kvp.Value.Dispose();
         }
         effects.Clear();
         effects = null;

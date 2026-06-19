@@ -8,23 +8,25 @@ namespace LF.GameLogic
 {
 public class PlatformController : MonoBehaviour
 {
-    public float width;          // ��PlatformData��ֵ
+    public float width;          // 来自PlatformData的值
     public float height;
 
-    private Vector3 basePosition; // ����ʱ�Ļ�׼λ��
+    private Vector3 basePosition; // 生成时的基准位置
     private PlatformData data;
     private Collider2D platformCollider;
     private Transform playerObj;
     private bool isReset = false;
 
-    private List<(GameObject obj, GameObject prefab)> items = new();
-    private List<(GameObject obj, GameObject prefab)> obstacles = new();
+    private List<GameObject> itemObjects = new();
+    private List<GameObject> itemPrefabRefs = new();
+    private List<GameObject> obstacleObjects = new();
+    private List<GameObject> obstaclePrefabRefs = new();
 
-    // ��׼�ұ߽磨����ʱ��λ��+���ȣ�������������һ��ƽ̨
+    // 基准右边界（生成时的位置+宽度），用于生成下一个平台
     public float BaseRight => basePosition.x + width;
     public float BaseY => basePosition.y;
 
-    // ʵʱ�ұ߽磨���Ƕ�̬�ƶ����ʵ�ʱ߽磩�����ڻ����ж�
+    // 实时右边界（考虑动态移动后的实际边界），用于回收判断
     public float RealRightEdge => platformCollider ? platformCollider.bounds.max.x : transform.position.x + width;
 
     void Awake()
@@ -52,7 +54,7 @@ public class PlatformController : MonoBehaviour
         transform.position = spawnPos;
         transform.rotation = Quaternion.identity;
 
-        // ȷ����ײ������
+        // 确保碰撞器已启用
         if (platformCollider != null && !platformCollider.enabled)
             platformCollider.enabled = true;
     }
@@ -88,7 +90,7 @@ public class PlatformController : MonoBehaviour
         return false;
     }
 
-    // ��ȡ���б��Ϊ"SpawnPoint"��������
+    // 获取所有标记为"SpawnPoint"的子对象
     public Transform[] GetSpawnPoints()
     {
         var points = new List<Transform>();
@@ -98,21 +100,34 @@ public class PlatformController : MonoBehaviour
         return points.ToArray();
     }
 
-    public void AddItem(GameObject obj, GameObject prefab) => items.Add((obj, prefab));
-    public void AddObstacle(GameObject obj, GameObject prefab) => obstacles.Add((obj, prefab));
+    public void AddItem(GameObject obj, GameObject prefab)
+    {
+        itemObjects.Add(obj);
+        itemPrefabRefs.Add(prefab);
+    }
+    public void AddObstacle(GameObject obj, GameObject prefab)
+    {
+        obstacleObjects.Add(obj);
+        obstaclePrefabRefs.Add(prefab);
+    }
 
-    public List<(GameObject obj, GameObject prefab)> GetAllItems() =>
-        items.ConvertAll(x => (x.obj, x.prefab));
-    public List<(GameObject obj, GameObject prefab)> GetAllObstacles() =>
-        obstacles.ConvertAll(x => (x.obj, x.prefab));
+    public int ItemCount => itemObjects.Count;
+    public int ObstacleCount => obstacleObjects.Count;
+
+    public GameObject GetItemObject(int index) => itemObjects[index];
+    public GameObject GetItemPrefab(int index) => itemPrefabRefs[index];
+    public GameObject GetObstacleObject(int index) => obstacleObjects[index];
+    public GameObject GetObstaclePrefab(int index) => obstaclePrefabRefs[index];
 
     public void ClearChildren()
     {
-        items.Clear();
-        obstacles.Clear();
+        itemObjects.Clear();
+        itemPrefabRefs.Clear();
+        obstacleObjects.Clear();
+        obstaclePrefabRefs.Clear();
     }
 
-    // ����ǰ����ƽ̨״̬
+    // 重置平台到初始状态
     public void ResetPlatform()
     {
         transform.position = basePosition;
@@ -122,7 +137,7 @@ public class PlatformController : MonoBehaviour
         if (platformCollider != null)
             platformCollider.enabled = true;
 
-        // ���ÿ��ܸ��ӵĶ�̬/�������
+        // 重置可能附加的动态/陷阱组件
         var dyn = GetComponent<DynamicPlatform>();
         if (dyn) dyn.Reset();
 
@@ -130,7 +145,7 @@ public class PlatformController : MonoBehaviour
         if (trap) trap.Reset();
     }
 
-    // �༭�����ӻ�����
+    // 编辑器可视化辅助
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;

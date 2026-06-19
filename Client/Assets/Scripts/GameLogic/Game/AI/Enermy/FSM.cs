@@ -48,11 +48,14 @@ public class FSM : MonoBehaviour, IDamageable
     private IState currentState;
     private SpriteRenderer _sprite;
     public SpriteRenderer sprite { get { return _sprite; } }
+    // 使用数组而非 List<T>：热更程序集中的值类型（StartAnim 是 struct）
+    // 在 List<T> 中会触发 get_Item 泛型实例化，AOT 侧无法提前生成，导致
+    // MissingMethodException。数组索引是 CLR 原生操作，不依赖泛型实例化。
     [SerializeField]
-    private List<StartAnim> state_anim = new List<StartAnim>();
+    private StartAnim[] state_anim = new StartAnim[0];
     private Dictionary<EnermyStateType, IState> states = new Dictionary<EnermyStateType, IState>();
 
-    [Header("��Ⱦʵ��")]
+    [Header("碰撞检测原点")]
     public Transform origin;
     public Parameter parameter;
     [HideInInspector]
@@ -60,24 +63,24 @@ public class FSM : MonoBehaviour, IDamageable
     [HideInInspector]
     public LayerMask layerMask;
 
-    // ����
+    // 调试绘制用
     private Vector3 drawPos;
     private bool isFlipX;
     private Parameter temp_parameter;
 
     void Awake()
     {
-        // ȷ����Awake�г�ʼ���������
+        // 确保在Awake中初始化必要组件
         if (parameter.animator == null)
             parameter.animator = GetComponent<Animator>();
         if (parameter.rb == null)
             parameter.rb = GetComponent<Rigidbody2D>();
 
-        // ȷ��origin������
+        // 确保origin已设置
         if (origin == null)
             origin = transform;
 
-        // ����sprite
+        // 缓存sprite引用
         Transform spriteTransform = transform.Find("sprite");
         if (spriteTransform != null)
         {
@@ -92,7 +95,7 @@ public class FSM : MonoBehaviour, IDamageable
 
     void Start()
     {
-        // ��ʼ��״̬��
+        // 初始化状态字典
         states.Add(EnermyStateType.Idle, new IdleState(this));
         states.Add(EnermyStateType.Patrol, new PatrolState(this));
         states.Add(EnermyStateType.Chase, new ChaseState(this));
@@ -106,7 +109,7 @@ public class FSM : MonoBehaviour, IDamageable
         layerMask = gameObject.layer;
         parameter.moveFrameInput = Vector2.zero;
 
-        // ��ȡ��ײ���С
+        // 获取碰撞体大小
         BoxCollider2D box = origin.GetComponent<BoxCollider2D>();
         if (box != null)
             originSize = box.size;
@@ -116,7 +119,7 @@ public class FSM : MonoBehaviour, IDamageable
         drawPos = transform.position;
         temp_parameter = CopyParameter(parameter);
 
-        // ע�ᵽGameReferee��ȷ��ʵ������
+        // 注册到GameReferee，确保实例唯一
         if (GameReferee.instance != null)
             GameReferee.instance.RegisterFSM(origin, this);
     }
@@ -189,7 +192,7 @@ public class FSM : MonoBehaviour, IDamageable
 
     public string GetStateAnimName(EnermyStateType type)
     {
-        for (int i = 0; i < state_anim.Count; i++)
+        for (int i = 0; i < state_anim.Length; i++)
         {
             if (state_anim[i].stateType == type)
             {

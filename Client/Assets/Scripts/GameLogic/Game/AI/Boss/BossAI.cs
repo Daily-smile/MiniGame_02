@@ -8,48 +8,48 @@ namespace LF.GameLogic
 {
 public class BossAI : MonoBehaviour, IDamageable
 {
-    [Header("״̬����")]
+    [Header("状态机")]
     public BossStateMachine stateMachine;
 
-    [Header("����ֵ����")]
+    [Header("生命属性")]
     public int maxHealth = 1000;
     public int currentHealth;
     public HealthBar healthBar;
 
-    [Header("�ƶ�����")]
+    [Header("移动参数")]
     public float patrolSpeed = 2f;
     public float chaseSpeed = 4f;
     public float patrolRange = 10f;
     public float chaseRange = 15f;
     public float attackRange = 3f;
 
-    [Header("��������")]
+    [Header("攻击伤害")]
     public int strikeDamage = 20;
     public int attackDamage = 30;
     public int jumpAttackDamage = 40;
     public int flyKickDamage = 35;
     public int crouchAttackDamage = 25;
 
-    [Header("��ȴʱ��")]
+    [Header("冷却时间")]
     public float strikeCooldown = 3f;
     public float attackCooldown = 5f;
     public float jumpCooldown = 8f;
     public float flyKickCooldown = 10f;
     public float crouchCooldown = 6f;
 
-    [Header("�׶�����")]
+    [Header("阶段阈值")]
     public int phase2HealthThreshold = 700;
     public int phase3HealthThreshold = 400;
     public int phase4HealthThreshold = 200;
 
-    // �ڲ�����
+    // 内部变量
     [HideInInspector] public Transform player;
     [HideInInspector] public Animator animator;
     [HideInInspector] public Rigidbody2D rb;
     [HideInInspector] public Collider2D bossCollider;
     [HideInInspector] public bool facingRight = true;
 
-    // ��ʱ��
+    // 计时器
     [HideInInspector] public float strikeTimer = 0f;
     [HideInInspector] public float attackTimer = 0f;
     [HideInInspector] public float jumpTimer = 0f;
@@ -57,7 +57,7 @@ public class BossAI : MonoBehaviour, IDamageable
     [HideInInspector] public float crouchTimer = 0f;
     [HideInInspector] public float dizzyTimer = 0f;
 
-    // �׶ι���
+    // 阶段管理
     [HideInInspector] public int currentPhase = 1;
 
     void Awake()
@@ -103,10 +103,10 @@ public class BossAI : MonoBehaviour, IDamageable
             healthBar.SetHealth(currentHealth);
             healthBar.gameObject.SetActive(true);
         }
-        // ��ʼ��״̬��
+        // 初始化状态机
         stateMachine = new BossStateMachine();
 
-        // ��������״̬
+        // 注册所有状态
         stateMachine.AddState(typeof(IdleBossState), new IdleBossState(this));
         stateMachine.AddState(typeof(PatrolBossState), new PatrolBossState(this));
         stateMachine.AddState(typeof(ChaseBossState), new ChaseBossState(this));
@@ -121,16 +121,16 @@ public class BossAI : MonoBehaviour, IDamageable
         stateMachine.AddState(typeof(CrouchAttackBossState), new CrouchAttackBossState(this));
         stateMachine.AddState(typeof(DeathBossState), new DeathBossState(this));
 
-        // ��ʼ״̬
+        // 初始状态设为巡逻
         stateMachine.ChangeState(typeof(PatrolBossState));
     }
 
     void Update()
     {
-        // �������м�ʱ��
+        // 更新所有计时器
         UpdateTimers();
 
-        // ����״̬��
+        // 更新状态机
         stateMachine.Update();
     }
 
@@ -156,23 +156,23 @@ public class BossAI : MonoBehaviour, IDamageable
             healthBar.SetHealth(currentHealth);
         }
 
-        // ���׶�ת��
+        // 检查阶段转换
         CheckPhaseTransition();
 
-        // ����״̬
+        // 进入受伤状态
         stateMachine.ChangeState(typeof(HurtBossState));
 
-        // ����Ч��
+        // 击退效果
         Vector2 knockbackDirection = (transform.position - (Vector3)damageSource).normalized;
         rb.AddForce(knockbackDirection * 5f, ForceMode2D.Impulse);
 
-        // ��һ�����ʽ���ѣ��״̬
-        if (Random.Range(0, 100) < 20) // 20%����ѣ��
+        // 有一定概率进入眩晕状态
+        if (Random.Range(0, 100) < 20) // 20%概率进入眩晕
         {
             dizzyTimer = 3f;
         }
 
-        // �������
+        // 检查是否死亡
         if (currentHealth <= 0)
         {
             stateMachine.ChangeState(typeof(DeathBossState));
@@ -188,23 +188,23 @@ public class BossAI : MonoBehaviour, IDamageable
         else if (currentHealth <= phase2HealthThreshold) currentPhase = 2;
         else currentPhase = 1;
 
-        // �׶�����ʱ���ӹ�����
+        // 阶段提升时增强攻击性
         if (currentPhase > oldPhase)
         {
-            // ������ȴʱ�䣬���ӹ���Ƶ��
+            // 减少冷却时间，增加攻击频率
             strikeCooldown *= 0.8f;
             attackCooldown *= 0.8f;
             jumpCooldown *= 0.8f;
             flyKickCooldown *= 0.8f;
 
-            // �����״̬
+            // 进入狂暴状态
             StartCoroutine(RageMode());
         }
     }
 
     IEnumerator RageMode()
     {
-        // ��״̬��Ч�������죩
+        // 狂暴状态效果（变红）
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null) yield break;
         Color originalColor = spriteRenderer.color;
@@ -225,12 +225,12 @@ public class BossAI : MonoBehaviour, IDamageable
 
     public bool IsGrounded()
     {
-        // ����Ƿ��ڵ�����
+        // 检测是否在地面上
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.1f);
         return hit.collider != null && hit.collider.gameObject != gameObject;
     }
 
-    // �����¼�����
+    // 攻击动画事件回调
     public void OnAttackAnimationEnd()
     {
         System.Type currentState = stateMachine.GetCurrentStateType();
@@ -245,7 +245,7 @@ public class BossAI : MonoBehaviour, IDamageable
         }
     }
 
-    // �������
+    // 伤害检测
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player") || other.CompareTag("NetPlayer"))
@@ -288,7 +288,7 @@ public class BossAI : MonoBehaviour, IDamageable
     }
 }
 
-// Boss״̬����ö��
+// Boss状态枚举
 public enum BossStateType
 {
     Idle,

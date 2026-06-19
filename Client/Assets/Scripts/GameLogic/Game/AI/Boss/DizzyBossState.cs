@@ -5,7 +5,7 @@ using LF.Network;
 namespace LF.GameLogic
 {
 /// <summary>
-/// ѣ��״̬
+    /// 眩晕状态
 /// </summary>
 public class DizzyBossState : BossState
 {

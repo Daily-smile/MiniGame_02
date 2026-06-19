@@ -4,7 +4,7 @@ using LF.Network;
 namespace LF.GameLogic
 {
 /// <summary>
-/// ��Ծ����״̬
+    /// 跳跃攻击状态
 /// </summary>
 public class JumpAttackBossState : BossState
 {
@@ -18,7 +18,7 @@ public class JumpAttackBossState : BossState
 
     public override void OnUpdate()
     {
-        // �ȴ�������ɻ����
+        // 等待落地后切回追击状态
         if (boss.IsGrounded())
         {
             boss.stateMachine.ChangeState(typeof(ChaseBossState));

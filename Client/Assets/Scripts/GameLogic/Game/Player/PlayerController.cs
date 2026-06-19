@@ -28,21 +28,21 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
     private RaycastHit2D downHit;
     private RaycastHit2D upHit;
     private Vector3 drawPos;
-    private Vector3 groundHitPoint; // ��ص�λ��
+    private Vector3 groundHitPoint; // 着地点位置
 
-    // ������ر���
+    // 藤蔓相关变量
     private Tengman _currentVine;
     private bool _isOnVine = false;
     private bool _isStayOnVine = false;
-    private bool _jumpFromVineConsumed = false; // ���������Ծ�Ƿ�������
+    private bool _jumpFromVineConsumed = false; // 藤蔓跳跃是否已消耗
 
     private int recordPlatformID;
     /// <summary>
-    /// ����Ƿ�����
+    /// 是否已死亡
     /// </summary>
     private bool _isDead;
     private bool _isGameEnd;
-    #region ����ӿ�
+    #region 属性接口
     public Vector2 FrameInput => _frameInput.Move;
     public event Action<bool, float> GroundedChanged;
     public event Action Fire;
@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
         return _isDead || _isGameEnd;
     }
 
-    #region �����¼��������
+    #region 全局事件监听
 
     private bool OnAgainGame(params object[] args)
     {
@@ -182,7 +182,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
         _time += Time.deltaTime;
         GatherInput();
         HandleFire();
-        // ��Update�д���������Ծ��ȷ����ʱ��Ӧ
+        // 藤蔓跳跃在Update中处理以确保及时响应
         HandleVineJump();
     }
 
@@ -218,7 +218,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
         _rb.gravityScale = _gravity;
 
         CheckCollisions();
-        HandleVineMovement(); // ���������ϵ��ƶ�
+        HandleVineMovement(); // 藤蔓上的移动
 
         HandleJump();
         HandleDirection();
@@ -227,7 +227,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
         ApplyMovement();
     }
 
-    #region ��ײ���
+    #region 碰撞检测
     private float _frameLeftGrounded = float.MinValue;
     private bool _grounded;
 
@@ -237,21 +237,20 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
 
         downHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.down, _stats.GrounderDistance, ~_stats.PlayerLayer);
         upHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.up, _stats.GrounderDistance, ~_stats.PlayerLayer);
-        //bool groundHit = downHit.collider != null && downHit.transform.gameObject.layer == 1 << LayerMask.NameToLayer("Ground");
         bool groundHit = downHit.collider != null;
         if (downHit.collider != null && GameManager.Instance.gameModel != GameManager.GameModel.Infinity)
         {
             Tilemap tileMap = downHit.transform.GetComponent<Tilemap>();
             if (tileMap != null)
             {
-                // ��ȡ��ײ�㲢΢������
+                // 获取碰撞点并微调偏移
                 groundHitPoint = downHit.point;
-                // �ؼ�������ײ������ײ���߷�������΢ƫ�ƣ�ȷ��������Ƭ�ڲ�
+                // 沿碰撞点的碰撞法线方向做微小偏移，确保检测点在瓦片内部
                 Vector3 adjustedWorldPosition = groundHitPoint - (Vector3)(downHit.normal * 0.01f);
                 groundHitPoint = adjustedWorldPosition;
-                // ����������ת��ΪTilemap�ĵ�Ԫ������
+                // 将世界坐标转换为Tilemap的单元格坐标
                 Vector3Int cellPosition = tileMap.WorldToCell(adjustedWorldPosition);
-                // ��ȡ�õ�Ԫ�����Ƭ
+                // 获取该单元格的瓦片
                 TileBase tile = tileMap.GetTile(cellPosition);
                 if (tile != null)
                 {
@@ -261,7 +260,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
                     }
                     else
                     {
-                        // ��������������Ƭ
+                        // 其他类型瓦片无需额外判断
                     }
                 }
             }
@@ -278,7 +277,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
             _endedJumpEarly = false;
             GroundedChanged?.Invoke(true, Mathf.Abs(_frameVelocity.y));
 
-            // ���ʱ�뿪����
+            // 着地时离开藤蔓
             if (_isOnVine)
             {
                 OnVineExit();
@@ -295,18 +294,18 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
     }
     #endregion
 
-    #region ��������
+    #region 藤蔓系统
     public void OnVineEnter(Tengman vine)
     {
         _currentVine = vine;
         _isOnVine = true;
-        _jumpFromVineConsumed = false; // ������Ծ���ı��
+        _jumpFromVineConsumed = false; // 重新进入藤蔓时重置跳跃标记
         _isStayOnVine = false;
 
-        // ���Ӵ�������ʱ������ֹͣ��ֱ�ٶ�
+        // 接触藤蔓时立即停止垂直速度
         _frameVelocity.y = 0;
         _gravity = _rb.gravityScale;
-        _rb.gravityScale = 0; // ��ʱ��������
+        _rb.gravityScale = 0; // 暂时关闭重力
     }
 
     public void OnVineStay(Tengman vine)
@@ -320,15 +319,15 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
     {
         _isOnVine = false;
         _currentVine = null;
-        _jumpFromVineConsumed = false; // ������Ծ���ı��
-        _rb.gravityScale = _gravity; // �ָ�����
+        _jumpFromVineConsumed = false; // 离开藤蔓时重置跳跃标记
+        _rb.gravityScale = _gravity; // 恢复重力
     }
 
     private void HandleVineMovement()
     {
         if (!_isOnVine) return;
 
-        // �������ϻ����»�
+        // 藤蔓上滑动/下滑
         float slideSpeed;
         if (_currentVine != null)
         {
@@ -337,7 +336,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
                 var inAirGravity = _stats.FallAcceleration * .5f;
                 slideSpeed = Mathf.MoveTowards(_frameVelocity.y, -1f, inAirGravity * Time.fixedDeltaTime);
             }
-            else 
+            else
             {
                 slideSpeed = -_currentVine.GetSlideSpeed();
             }
@@ -347,40 +346,40 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
             slideSpeed = -1f;
         }
 
-        // ����Ƿ���ǽ����ײ���������Ӧ��ˮƽ�ƶ�
+        // 检测是否靠墙（碰撞后限制水平移动）
         bool isAgainstWall = CheckWallCollision(_frameInput.Move.x);
 
         if (isAgainstWall)
         {
-            // ����ǽ��ʱ��ֻ�����»���������ˮƽ�ƶ�
+            // 靠墙时只允许下滑，不允许水平移动
             _frameVelocity.x = 0;
         }
         else
         {
-            // ��������������������ƶ�
+            // 不靠墙时可以自由水平移动
             if (_frameInput.Move.x != 0)
             {
                 _frameVelocity.x = Mathf.MoveTowards(_frameVelocity.x, _frameInput.Move.x * _stats.MaxSpeed * 0.5f, _stats.Acceleration * Time.fixedDeltaTime);
             }
             else
             {
-                // ��������ˮƽ�ƶ��ļ��ٶ�
+                // 无输入时水平减速
                 _frameVelocity.x = Mathf.MoveTowards(_frameVelocity.x, 0, _stats.AirDeceleration * Time.fixedDeltaTime);
             }
         }
 
-        // ʼ�ձ����»�
+        // 始终保持下滑
         _frameVelocity.y = slideSpeed;
     }
 
-    // ���ǽ����ײ
+    // 墙壁碰撞检测
     private bool CheckWallCollision(float direction)
     {
         if (direction == 0) return false;
 
         Physics2D.queriesStartInColliders = false;
-        // ���ָ�������Ƿ���ǽ��
-        float checkDistance = 0.1f; // ������
+        // 向指定方向检测是否靠墙
+        float checkDistance = 0.1f; // 检测距离
         Vector2 checkDirection = direction > 0 ? Vector2.right : Vector2.left;
 
         RaycastHit2D hit = Physics2D.CapsuleCast(
@@ -396,7 +395,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
         return hit.collider != null && !hit.collider.isTrigger;
     }
 
-    // ��������Update�д���������Ծ��ȷ����ʱ��Ӧ
+    // 藤蔓跳跃在Update中处理以确保及时响应
     private void HandleVineJump()
     {
         if (_isOnVine && _frameInput.JumpDown && !_jumpFromVineConsumed)
@@ -405,14 +404,14 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
             _jumpFromVineConsumed = true;
         }
 
-        // ������Ծ���ı��
+        // 松开跳跃键时重置标记
         if (!_frameInput.JumpDown)
         {
             _jumpFromVineConsumed = false;
         }
     }
 
-    // ������ר�Ŵ���������Ծ
+    // 执行藤蔓跳跃
     private void ExecuteVineJump()
     {
         _endedJumpEarly = false;
@@ -420,18 +419,18 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
         _bufferedJumpUsable = false;
         _coyoteUsable = false;
 
-        // �������������Ծ��Ӧ����Ծ�ӳ�
+        // 藤蔓专用跳跃力加成
         float jumpPower = _stats.JumpPower;
         if (_currentVine != null)
         {
             jumpPower *= _currentVine.GetJumpBoost();
         }
 
-        // �������뷽�������Ծ����
+        // 有水平输入时沿方向跳跃
         Vector2 jumpDirection = Vector2.up;
         if (_frameInput.Move.x != 0)
         {
-            // ����ˮƽ�������Ծ����
+            // 有水平输入时跳跃方向偏移
             jumpDirection.x = _frameInput.Move.x * 0.5f;
             jumpDirection.Normalize();
         }
@@ -439,12 +438,12 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
         _frameVelocity = jumpDirection * jumpPower;
         Jumped?.Invoke();
 
-        // ��Ծ���뿪����
+        // 跳跃后离开藤蔓
         OnVineExit();
     }
     #endregion
 
-    #region ������
+    #region 攻击
     private void HandleFire()
     {
         if (GameInputSystem.instance.Fire)
@@ -467,7 +466,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
 
     private void HandleJump()
     {
-        // ����������ϣ���������ͨ��Ծ��������Ծ����Update�д�����
+        // 藤蔓跳跃已在HandleVineJump中处理
         if (_isOnVine) return;
 
         if (!_endedJumpEarly && !_grounded && !_frameInput.JumpHeld && _rb.velocity.y > 0) _endedJumpEarly = true;
@@ -501,7 +500,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
     {
         if (_isOnVine)
         {
-            // �����ϵ�ˮƽ�ƶ��Ѿ���HandleVineMovement�д���
+            // 藤蔓上的水平移动已在HandleVineMovement中处理
             return;
         }
 
@@ -524,7 +523,7 @@ public class PlayerController : MonoBehaviour, IPlayerController, IDamageable
     {
         if (_isOnVine)
         {
-            // �����ϵ������Ѿ���HandleVineMovement�д���
+            // 藤蔓上的重力已在HandleVineMovement中处理
             return;
         }
 
@@ -592,7 +591,7 @@ public interface IPlayerController
     public event Action Jumped;
     public Vector2 FrameInput { get; }
     /// <summary>
-    /// ��������Buffer
+    /// 发射器反冲Buffer
     /// </summary>
     public abstract void HandleShooterBuffer();
 }

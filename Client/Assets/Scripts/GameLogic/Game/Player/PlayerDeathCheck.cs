@@ -6,20 +6,20 @@ namespace LF.GameLogic
 {
 public class PlayerDeathCheck : MonoBehaviour
 {
-    private LayerMask platformLayer;                  // ƽ̨���ڲ�
+    private LayerMask platformLayer;                  // 平台所在层
 
     [Header("Settings")]
-    public float maxRayDistance = 20f;                // ����������
+    public float maxRayDistance = 20f;                // 射线最大检测距离
     [Range(10, 90)]
-    public int rayCount = 7;                          // �����������������飩
-    public float noPlatformTimeout = 2f;            // δ��⵽ƽ̨ʱ�����ȴ�ʱ��
+    public int rayCount = 10;                          // 射线数量（越多检测越精确）
+    public float noPlatformTimeout = 2f;            // 未检测到平台时的超时等待时间
 
-    private float scanAngle = 150f;                     // ����ɨ��Ƕȣ��������Ҹ�һ�룩
+    private float scanAngle = 150f;                     // 扇形扫描角度（左右各一半）
     private Collider2D playerCollider;
     private Rigidbody2D rb;
     private float noPlatformTimer = 0f;
 
-    // ɨ�����ṹ
+    // 扫描结果结构体
     private struct ScanResult
     {
         public bool hasPlatform;
@@ -71,14 +71,14 @@ public class PlayerDeathCheck : MonoBehaviour
 
     private void CheckDeath()
     {
-        // �����ҵ�ǰվ��ƽ̨�ϣ����ü�ʱ��������
+        // 如果检测到当前站在平台上，重置计时并返回
         if (playerCollider.IsTouchingLayers(platformLayer))
         {
             noPlatformTimer = 0f;
             return;
         }
 
-        // ִ������ɨ��
+        // 执行扇形扫描检测
         ScanResult result = ScanForPlatform();
 
         if (result.hasPlatform)
@@ -87,7 +87,7 @@ public class PlayerDeathCheck : MonoBehaviour
         }
         else
         {
-            // û�м�⵽ƽ̨���ۼӼ�ʱ��
+            // 没有检测到平台，累加计时
             noPlatformTimer += Time.deltaTime;
             if (noPlatformTimer >= noPlatformTimeout)
             {
@@ -101,7 +101,7 @@ public class PlayerDeathCheck : MonoBehaviour
     {
         Vector2 bottom = new Vector2(transform.position.x, playerCollider.bounds.min.y);
         float halfAngle = scanAngle * 0.5f;
-        float startAngle = -halfAngle;               // ����ڴ�ֱ���·����ƫ��
+        float startAngle = -halfAngle;               // 相对于垂直向下方向的偏移角
         float step = scanAngle / (rayCount - 1);
 
         for (int i = 0; i < rayCount; i++)

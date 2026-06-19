@@ -61,6 +61,9 @@ public class MirrorPlayer : NetworkBehaviour
     {
         base.OnStartAuthority();
 
+        // 通过钩子动态添加热更程序集中的驱动组件（避免预制体直接引用热更脚本导致序列化不匹配）
+        MirrorPlayerComponentSetup.OnMirrorPlayerAuthority?.Invoke(gameObject);
+
         var localDriver = GetComponent<ILocalPlayerDriver>();
         if (localDriver != null)
             localDriver.Initialize();
@@ -85,6 +88,9 @@ public class MirrorPlayer : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
+
+        // 通过钩子动态添加热更程序集中的视图/控制器组件（避免预制体直接引用热更脚本导致序列化不匹配）
+        MirrorPlayerComponentSetup.OnMirrorPlayerCreated?.Invoke(gameObject);
 
         Debug.Log($"[MirrorPlayer] OnStartClient: playerName={playerName}, gameObject={gameObject.name}, "
                 + $"authority={authority}");
